@@ -5,7 +5,7 @@ import { QUESTIONS, CATEGORIES as QCATS } from '../data/questions.js';
 import { FAULTS, FAULT_SYSTEMS } from '../data/faults.js';
 import { db, getSetting, setSetting } from '../db.js';
 import { speak, stop } from '../speech.js';
-import { h, setHeader } from '../ui.js';
+import { h, setHeader, toast } from '../ui.js';
 import { getGame, levelInfo, recordLesson, DAILY_GOAL } from '../game-state.js';
 
 const LESSON_SIZE = 10;
@@ -424,10 +424,18 @@ async function sfx(kind) {
 
 export function statsBar(game) {
   const lvl = levelInfo(game.xp);
+  const stat = (cls, icon, value, label, info) =>
+    h('button', { class: `stat ${cls}`, 'aria-label': `${label}: ${value}. ${info}`, onclick: () => toast(info) },
+      h('span', { class: 'stat-val' }, icon ? `${icon} ` : '', h('b', {}, value)),
+      h('span', { class: 'stat-label' }, label),
+    );
   return h('div', { class: 'stats-bar' },
-    h('span', { class: `stat ${game.streak ? 'fire' : ''}`, title: 'Racha de días' }, '🔥 ', h('b', {}, game.streak)),
-    h('span', { class: 'stat xp', title: 'Energía (XP)' }, '⚡ ', h('b', {}, game.xp)),
-    h('span', { class: 'stat lvlbadge', title: 'Nivel' }, h('b', {}, lvl.name)),
+    stat(game.streak ? 'fire' : '', '🔥', game.streak, 'Días seguidos',
+      '🔥 Racha: días seguidos con al menos una lección. Si un día no practicas, vuelve a 0.'),
+    stat('xp', '⚡', game.xp, 'Puntos XP',
+      '⚡ XP: puntos ganados. 10 por acierto, 5 con pista. Meta diaria: 50 XP.'),
+    stat('lvlbadge', '', lvl.name, 'Nivel',
+      lvl.nextName ? `Nivel ${lvl.name}: sube con tus XP. Te faltan ${lvl.toNext} XP para ${lvl.nextName}.` : `Nivel máximo: ${lvl.name}.`),
   );
 }
 
