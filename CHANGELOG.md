@@ -1,7 +1,7 @@
 # Historial de cambios
 
 ## v3.2.0 — Versión respaldada
-Estado completo de la app a la fecha. Commit `92df86d` de `main` (crear la Release `v3.2.0` en GitHub: ver `MEJORAS.md`).
+Estado completo de la app a la fecha. Commit `bc75844` de `main` (crear la Release `v3.2.0` en GitHub: ver `MEJORAS.md`).
 
 ### Íconos y apariencia
 - 12 opciones de ícono para la pantalla de inicio (⚙️ → Ícono de la app), con pasos guiados para cambiarlo sin perder datos.

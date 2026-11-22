@@ -7,7 +7,7 @@
 4. Al subir a `main`, GitHub Pages publica la versión nueva sola y el iPhone se actualiza al abrir la app con internet.
 
 ## Cómo volver a esta versión si algo sale mal
-- Versión estable **v3.2.0** = commit **`92df86d`** de `main` (pestaña *Commits* en GitHub).
+- Versión estable **v3.2.0** = commit **`bc75844`** de `main` (pestaña *Commits* en GitHub).
 - Recomendado: créale una *Release* en GitHub (pasos abajo) para encontrarla fácil.
 - Para descargarla completa: en GitHub, botón **Code → Download ZIP** (o desde la Release).
 

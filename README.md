@@ -116,7 +116,7 @@ La app se actualiza sola: cuando la abres con internet y hay una versión nueva,
 
 - **Historial de cambios:** [`CHANGELOG.md`](CHANGELOG.md)
 - **Guía para mejoras futuras e ideas pendientes:** [`MEJORAS.md`](MEJORAS.md)
-- **Versión estable respaldada:** v3.2.0 (commit `92df86d`; ver cómo crear la Release en `MEJORAS.md`)
+- **Versión estable respaldada:** v3.2.0 (commit `bc75844`; ver cómo crear la Release en `MEJORAS.md`)
 
 HTML, CSS y JavaScript puros (módulos ES), sin frameworks ni paso de compilación.
 
