@@ -690,4 +690,37 @@ input, textarea { -webkit-user-select: text; user-select: text; }
 .icon-steps { border-color: var(--accent); }
 .small-input { font-size: 14px; min-height: 44px; }
 
+.naming { display: flex; flex-direction: column; align-items: center; gap: 4px; margin-bottom: 10px; text-align: center; }
+.nm.big { font-size: 34px; font-weight: 900; letter-spacing: .04em; }
+.d1 { color: var(--accent); }
+.d2 { color: var(--primary-ink); }
+.nm-k { font-size: 13px; color: var(--muted); }
+.nmea { margin-top: 12px; }
+.nmea code {
+  display: block; padding: 12px; border-radius: 10px; background: var(--surface-2); border: 1px solid var(--border);
+  font: 700 17px ui-monospace, Menlo, monospace; overflow-x: auto; white-space: nowrap;
+}
+.nmea ul { margin: 8px 0 0; padding-left: 18px; font-size: 13px; }
+.n-s { color: var(--muted); } .n-t { color: var(--accent); } .n-y { color: var(--primary-ink); } .n-d { color: var(--ok-ink); } .n-c { color: var(--danger); }
+
+.private-images { border-color: rgba(63, 169, 255, .45); }
+.img-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.img-card { display: flex; flex-direction: column; gap: 2px; text-decoration: none; color: var(--text); font-size: 12px; min-width: 0; }
+.img-card img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; border-radius: 10px; border: 1px solid var(--border); background: var(--surface-2); }
+.img-card span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 600; }
+.img-strip { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px; }
+.img-thumb img { height: 84px; width: auto; border-radius: 10px; border: 1px solid var(--border); }
+.img-view { overflow: auto; border-radius: 12px; background: var(--surface-2); touch-action: pinch-zoom pan-x pan-y; }
+.img-view img { display: block; width: 100%; height: auto; }
+select.input { appearance: auto; }
+
+.review-topic h2 { margin: 0; font-size: 18px; }
+.review-topic h3 { margin: 6px 0 0; }
+.qx { padding: 8px 0; border-bottom: 1px solid var(--border); }
+.qx:last-child { border-bottom: 0; }
+.qx .ex-en { margin: 0; }
+.qx-answer { margin: 4px 0 0; color: var(--ok-ink); }
+
+.nowrap { white-space: nowrap; }
+
 [hidden] { display: none !important; }

@@ -1,5 +1,15 @@
 # Historial de cambios
 
+## v3.3.0 — K-Pos, imágenes privadas y repaso antes de exámenes
+- **K-Pos (mantenimiento DP)**: 19 preguntas de entrevista nuevas (subsistemas DP, 6 grados de libertad, modelo y residual, nomenclatura DP-XY, clases IMO, redundancia, modos, estación de operador, gabinete DP, interfaces de sensores y referencias, red doble, RS-232/RS-422, NMEA 0183, joystick independiente, respaldo del sistema, FAT/CAT/FMEA, búsqueda de fallas), redactadas con palabras propias a partir de los temas de un curso de mantenimiento K-Pos.
+- **Glosario**: 42 términos de K-Pos (345 en total).
+- **Guía visual**: 7 diagramas propios nuevos (22 en total): seis grados de libertad, modelo y residual, nombres y clases K-Pos, modos, interfaces, red doble y serial/NMEA.
+- **Fallas**: 2 casos nuevos (gyro rechazado por señal ready, alarma de Red B).
+- **Mis imágenes (privadas)**: agregar fotos o capturas propias que se guardan solo en el dispositivo y en el respaldo, nunca en la web; se muestran también en las preguntas y diagramas de DP.
+- **Inglés**: lección de repaso antes de cada examen (resumen, ejemplos y ejercicios de cada tema, y práctica corta).
+- **Corrección**: en K-Pos DP-XY el segundo dígito es la topología (1 independiente, 2 integrado); DP-31 es clase 2 y la clase 3 es sistema principal + respaldo (p. ej. DP-21 + DP-11).
+- Al importar un respaldo antiguo ya no se borran los datos que el respaldo no incluye (por ejemplo, imágenes).
+
 ## v3.2.0 — Versión respaldada
 Estado completo de la app a la fecha. Commit `bc75844` de `main` (crear la Release `v3.2.0` en GitHub: ver `MEJORAS.md`).
 

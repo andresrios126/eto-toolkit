@@ -19,7 +19,9 @@ const mot = (cx, cy, label) =>
 
 const brk = (x, y) => `<rect x="${x - 5}" y="${y - 5}" width="10" height="10" class="brk"/>`;
 
-export const DIAGRAMS = [
+import { KPOS_DIAGRAMS } from './diagrams-kpos.js';
+
+const BASE_DIAGRAMS = [
   {
     id: 'dp-overview',
     title: 'Sistema DP: visión general',
@@ -436,3 +438,7 @@ export const DIAGRAMS = [
     terms: [['PT100', 'sonda PT100'], ['magnetic pick-up', 'pick-up magnético'], ['current transformer', 'transformador de corriente'], ['load cell', 'celda de carga']],
   },
 ];
+
+// Los diagramas de K-Pos se colocan después de los de DP.
+const AFTER = BASE_DIAGRAMS.findIndex((d) => d.id === 'dp-alert') + 1;
+export const DIAGRAMS = [...BASE_DIAGRAMS.slice(0, AFTER), ...KPOS_DIAGRAMS, ...BASE_DIAGRAMS.slice(AFTER)];

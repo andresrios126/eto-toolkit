@@ -279,7 +279,7 @@ const questionCats = Object.keys(QCATS);
 
 const ICONS = {
   basic: '⚡', gen: '🔄', dist: '🔌', motor: '⚙️', dp: '🧭', auto: '🤖', safety: '🦺', tools: '🧰', nav: '📡',
-  vessel: '🚢', ships: '🛳️', prop: '🌀', volt: '🔋', sensors: '🌡️', radar: '📡', dpterm: '🎯', career: '📄', phrases: '💬', cv: '📄', hr: '🤝',
+  vessel: '🚢', ships: '🛳️', prop: '🌀', volt: '🔋', sensors: '🌡️', radar: '📡', dpterm: '🎯', career: '📄', phrases: '💬', kpos: '🖥️', cv: '📄', hr: '🤝',
   thruster: '🌀', swbd: '🎛️', pms: '🖥️', loto: '🔒', personal: '🙋', hv: '⚠️', batt: '🔋', situ: '💬',
 };
 

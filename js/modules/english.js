@@ -202,7 +202,7 @@ function examRow(exam, p) {
   const sub = locked ? `Se desbloquea en nivel ${exam.level} (faltan ${exam.unlock - p.xp} XP)`
     : r?.passed ? `Aprobado · mejor nota ${r.best}%`
     : r ? `No aprobado (${r.last}%) · vuelve a intentarlo`
-    : `${EXAM_SIZE} preguntas · aprueba con ${PASS}%`;
+    : `${EXAM_SIZE} preguntas · aprueba con ${PASS}%${p.reviews?.[exam.level] ? ' · repaso ✓' : ' · haz el repaso primero'}`;
   return h('a', {
     class: `term-row exam-row ${locked ? 'locked' : ''}`,
     href: locked ? null : `#/ingles/examen/${exam.level}`,
@@ -211,6 +211,107 @@ function examRow(exam, p) {
   h('span', { class: 'exam-badge' }, exam.level),
   h('span', { class: 'term-main' }, h('strong', {}, exam.title), h('span', { class: 'muted' }, sub)),
   h('span', { class: 'exam-status' }, status));
+}
+
+
+// ---------- Lección de repaso antes del examen ----------
+
+// Ejercicio rápido "toca para ver la respuesta".
+function quickExercise(sentence, hint, answer, es) {
+  const ans = h('p', { class: 'qx-answer', hidden: true }, '✔ ', h('b', {}, answer), es ? h('span', { class: 'muted small block' }, es) : null);
+  const btn = h('button', { class: 'link' }, '👀 Ver respuesta');
+  btn.onclick = () => { ans.hidden = !ans.hidden; btn.textContent = ans.hidden ? '👀 Ver respuesta' : '🙈 Ocultar'; if (!ans.hidden) speak(sentence.replace('___', answer.split('|')[0].split(' / ')[0])); };
+  return h('div', { class: 'qx' }, h('p', { class: 'ex-en' }, sentence, hint ? h('span', { class: 'muted' }, `  (${hint})`) : null), btn, ans);
+}
+
+function exampleRow(en, es) {
+  return h('div', { class: 'example-row' },
+    h('button', { class: 'say-btn small', 'aria-label': 'Escuchar', onclick: () => speak(en) }, '🔊'),
+    h('div', {}, h('p', { class: 'ex-en' }, en), h('p', { class: 'muted small ex-es' }, es)));
+}
+
+function reviewCard(k, n) {
+  if (k === 'irregulares' || k === 'regulares') {
+    const irr = k === 'irregulares';
+    const list = irr ? shuffle(IRREGULAR).slice(0, 5) : shuffle(REGULAR).slice(0, 5);
+    const exs = shuffle(irr ? IRREGULAR : REGULAR).slice(0, 2);
+    return h('section', { class: 'card review-topic' },
+      h('div', { class: 'row-between' }, h('h2', {}, `${n}. ${topicName(k)}`), h('a', { class: 'link', href: topicHref(k) }, 'Ver tema →')),
+      h('p', { class: 'small' }, irr
+        ? 'Los irregulares no siguen la regla de -ed: hay que aprender sus tres formas (base – pasado – participio).'
+        : 'Los regulares forman el pasado y el participio con -ed: work → worked, live → lived, study → studied, stop → stopped.'),
+      h('h3', { class: 'label' }, 'Ejemplos'),
+      ...list.map((v) => {
+        const f = ES_FORMS[v[0]] || ['', '', ''];
+        return irr
+          ? exampleRow(`${v[0]} – ${v[1]} – ${v[2]}`, `${v[3]}: (yo) ${f[0]} · (yo) ${f[1]} · (he) ${f[2]}`)
+          : exampleRow(`${v[0]} – ${v[1]}`, `${v[2]}: (yo) ${f[1]} · (he) ${f[2]}`);
+      }),
+      h('h3', { class: 'label' }, 'Ejercicios rápidos'),
+      ...exs.map((v) => quickExercise(`Past of "${v[0]}": ___`, irr ? v[3] : v[2], v[1], '')),
+    );
+  }
+  const t = TENSES.find((x) => x.id === k);
+  if (!t) return null;
+  return h('section', { class: 'card review-topic' },
+    h('div', { class: 'row-between' }, h('h2', {}, `${n}. ${t.name}`), h('a', { class: 'link', href: topicHref(k) }, 'Ver tema →')),
+    h('p', { class: 'muted small' }, t.es),
+    h('ul', { class: 'steps' }, ...t.use.slice(0, 2).map((u) => h('li', {}, u))),
+    h('table', { class: 'dtable form-table' }, h('tbody', {}, ...t.form.map(([a, b]) => h('tr', {}, h('th', {}, a), h('td', { class: 'en-cell' }, b))))),
+    h('p', { class: 'note small' }, '💡 ', t.tip),
+    h('h3', { class: 'label' }, 'Ejemplos'),
+    ...t.examples.slice(0, 3).map(([en, es]) => exampleRow(en, es)),
+    h('h3', { class: 'label' }, 'Ejercicios rápidos'),
+    ...shuffle(t.exercises).slice(0, 2).map(([s0, verb, ans, es]) => quickExercise(s0, verb, ans.split('|')[0], es)),
+  );
+}
+
+function reviewQuestions(exam) {
+  const out = [];
+  for (const k of exam.topics) {
+    let qs;
+    if (k === 'irregulares') qs = irregularQuestions(2);
+    else if (k === 'regulares') qs = regularQuestions(2);
+    else {
+      const t = TENSES.find((x) => x.id === k);
+      qs = [fromExercise(t, pick(t.exercises), 'mc'), whichTense(t)];
+    }
+    out.push(...qs);
+  }
+  return shuffle(out);
+}
+
+async function viewReview(root, level) {
+  const exam = EXAMS.find((e) => e.level === level);
+  if (!exam) { location.hash = '#/ingles'; return; }
+  setHeader(`Repaso ${exam.level}`, `#/ingles/examen/${level}`);
+  root.replaceChildren(
+    h('section', { class: 'card center' },
+      h('div', { class: 'exam-badge big' }, exam.level),
+      h('h2', {}, `Lección de repaso · ${exam.title}`),
+      h('p', { class: 'muted small' }, `Un resumen de los ${exam.topics.length} temas del examen, con ejemplos y ejercicios rápidos. Al final, una práctica corta con corrección.`),
+    ),
+    ...exam.topics.map((k, i) => reviewCard(k, i + 1)),
+    rateControl(),
+    h('button', { class: 'btn btn-primary btn-xl', onclick: () => {
+      setHeader(`Práctica de repaso ${exam.level}`, `#/ingles/examen/${level}`);
+      runLesson(root, {
+        title: `Práctica de repaso ${exam.level}`, backHash: `#/ingles/examen/${level}`, backLabel: '📝 Ir al examen', flavor: 'eng',
+        build: async () => reviewQuestions(exam),
+        record: async (r) => {
+          const res = await record(`review-${level}`, r);
+          if (r.completed) {
+            const p = await getProgress();
+            p.reviews = { ...(p.reviews || {}), [level]: true };
+            await setSetting('english', p);
+          }
+          return res;
+        },
+      });
+      window.scrollTo(0, 0);
+    } }, '▶ Practicar el repaso'),
+    h('a', { class: 'btn btn-secondary', href: `#/ingles/examen/${level}` }, '📝 Ir al examen'),
+  );
 }
 
 async function viewExamIntro(root, level) {
@@ -233,7 +334,9 @@ async function viewExamIntro(root, level) {
         r?.weak?.includes(k) ? h('span', { class: 'tag tag-warn' }, 'repasar') : null)),
       h('p', { class: 'muted small' }, 'Consejo: repasa cada tema y su práctica antes del examen. No verás si aciertas hasta el final, como en un examen real.'),
     ),
-    h('button', { class: 'btn btn-primary btn-xl', onclick: () => runExam(root, exam) }, '📝 Empezar examen'),
+    h('a', { class: `btn btn-xl ${p.reviews?.[level] ? 'btn-secondary' : 'btn-primary'}`, href: `#/ingles/repaso/${level}` },
+      p.reviews?.[level] ? '✅ Lección de repaso (hecha) · repetir' : '📖 Lección de repaso (recomendada)'),
+    h('button', { class: `btn btn-xl ${p.reviews?.[level] ? 'btn-primary' : 'btn-secondary'}`, onclick: () => runExam(root, exam) }, '📝 Empezar examen'),
   );
 }
 
@@ -567,5 +670,6 @@ export async function englishRoute(root, parts) {
   if (parts[0] === 'regulares') return viewRegular(root);
   if (parts[0] === 'practica' && parts[1]) return viewPractice(root, parts[1]);
   if (parts[0] === 'examen' && parts[1]) return viewExamIntro(root, parts[1]);
+  if (parts[0] === 'repaso' && parts[1]) return viewReview(root, parts[1]);
   return viewHome(root);
 }

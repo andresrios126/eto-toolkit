@@ -5,10 +5,11 @@
 //   log      -> historial de práctica { id(auto), qid, date, seconds }
 //   glossary -> estado/ediciones de términos y términos propios { id, fav, known, edited, custom, en, es, def, ex, cat }
 //   faults   -> casos de fallas propios { id, titleEn, titleEs, symptom, causes[], steps[], fix, explainEn, explainEs }
+//   images   -> imágenes privadas del usuario { id, title, topic, data (data URL), w, h, createdAt } (nunca se publican)
 
 const DB_NAME = 'eto-toolkit';
-const DB_VERSION = 3;
-export const STORES = ['answers', 'settings', 'log', 'glossary', 'faults'];
+const DB_VERSION = 4;
+export const STORES = ['answers', 'settings', 'log', 'glossary', 'faults', 'images'];
 
 let dbPromise = null;
 
@@ -23,6 +24,7 @@ function openDB() {
       if (!db.objectStoreNames.contains('log')) db.createObjectStore('log', { keyPath: 'id', autoIncrement: true });
       if (!db.objectStoreNames.contains('glossary')) db.createObjectStore('glossary', { keyPath: 'id' });
       if (!db.objectStoreNames.contains('faults')) db.createObjectStore('faults', { keyPath: 'id' });
+      if (!db.objectStoreNames.contains('images')) db.createObjectStore('images', { keyPath: 'id' });
     };
     req.onsuccess = () => {
       const conn = req.result;
@@ -92,6 +94,8 @@ export async function importBackup(json) {
   const d = await openDB();
   const t = d.transaction(STORES, 'readwrite');
   for (const s of STORES) {
+    // Un respaldo antiguo puede no traer algún store (por ejemplo, imágenes): en ese caso se conserva lo actual.
+    if (!Array.isArray(json.data[s])) continue;
     const store = t.objectStore(s);
     store.clear();
     for (const row of json.data[s] || []) store.put(row);

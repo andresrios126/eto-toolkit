@@ -4,11 +4,16 @@ import { DIAGRAMS } from '../data/diagrams.js';
 import { speak } from '../speech.js';
 import { h, setHeader } from '../ui.js';
 import { rateControl } from '../components.js';
+import { imagesSection, imageStrip, viewImage } from './images.js';
 
-function viewList(root) {
+const DP_DIAGRAMS = ['dp-overview', 'dp2-split', 'dp-classes', 'dp-refs', 'dp-alert', 'six-dof', 'dp-model', 'kpos-classes', 'kpos-modes', 'kpos-interfaces', 'dp-network', 'serial-nmea', 'sensors', 'radar'];
+
+async function viewList(root) {
   setHeader('Guía visual', '#/');
+  const imgs = await imagesSection(() => viewList(root));
   root.replaceChildren(
     h('p', { class: 'muted center small' }, 'Diagramas de referencia para entender y explicar los sistemas en inglés.'),
+    imgs,
     h('div', { class: 'grid2' },
       ...DIAGRAMS.map((d) =>
         h('a', { class: 'card guide-card', href: `#/guia/d/${d.id}` },
@@ -22,7 +27,7 @@ function viewList(root) {
   );
 }
 
-function viewDetail(root, id) {
+async function viewDetail(root, id) {
   const i = DIAGRAMS.findIndex((d) => d.id === id);
   const d = DIAGRAMS[i];
   if (!d) { location.hash = '#/guia'; return; }
@@ -42,6 +47,7 @@ function viewDetail(root, id) {
         ...d.terms.map(([en, es]) => h('button', { class: 'term-chip', onclick: () => speak(en) }, h('b', {}, en), h('span', {}, es))),
       ),
     ) : null,
+    DP_DIAGRAMS.includes(d.id) ? await imageStrip(['dp', 'sensors', 'network'], '📷 Tus imágenes de DP') : null,
     rateControl(),
     h('div', { class: 'btn-row' },
       prev ? h('a', { class: 'btn btn-ghost', href: `#/guia/d/${prev.id}` }, '← Anterior') : h('span'),
@@ -52,5 +58,6 @@ function viewDetail(root, id) {
 
 export async function guideRoute(root, parts) {
   if (parts[0] === 'd' && parts[1]) return viewDetail(root, parts[1]);
+  if (parts[0] === 'img' && parts[1]) return viewImage(root, parts[1]);
   return viewList(root);
 }

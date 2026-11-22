@@ -4,9 +4,11 @@
 
 import { EXTRA_CATEGORIES, EXTRA_QUESTIONS, KP_BASE } from './questions-extra.js';
 import { CV_CATEGORIES, CV_QUESTIONS } from './questions-cv.js';
+import { KPOS_CATEGORIES, KPOS_QUESTIONS } from './questions-kpos.js';
 
 export const CATEGORIES = {
   dp: 'DP System',
+  ...KPOS_CATEGORIES,
   thruster: 'Bow Thruster / Propulsión',
   gen: 'Generadores',
   swbd: 'Switchboard',
@@ -277,7 +279,7 @@ const BASE_QUESTIONS = [
 ];
 
 // Orden: base + adicionales, agrupadas por categoría en el orden de CATEGORIES.
-const ALL = [...BASE_QUESTIONS.map((q) => ({ ...q, kp: KP_BASE[q.id] || [] })), ...EXTRA_QUESTIONS, ...CV_QUESTIONS];
+const ALL = [...BASE_QUESTIONS.map((q) => ({ ...q, kp: KP_BASE[q.id] || [] })), ...EXTRA_QUESTIONS, ...CV_QUESTIONS, ...KPOS_QUESTIONS];
 const ORDER = Object.keys(CATEGORIES);
 export const QUESTIONS = ALL
   .map((q, i) => ({ q, i }))
