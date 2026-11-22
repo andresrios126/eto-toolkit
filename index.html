@@ -22,6 +22,16 @@
       var v = JSON.parse(localStorage.getItem('eto-theme-vars'));
       if (v) for (var k in v) document.documentElement.style.setProperty(k, v[k]);
     } catch (e) {}
+    // Ícono elegido: ?icon=nombre en el enlace o el guardado. Safari lo usa al "Agregar a pantalla de inicio".
+    try {
+      var m = location.search.match(/[?&]icon=([a-z]+)/);
+      var ic = m ? m[1] : localStorage.getItem('eto-icon');
+      if (m) localStorage.setItem('eto-icon', ic);
+      if (ic) {
+        document.querySelector('link[rel="apple-touch-icon"]').href = 'icons/options/' + ic + '-180.png';
+        document.querySelector('link[rel="icon"]').href = 'icons/options/' + ic + '-192.png';
+      }
+    } catch (e) {}
   </script>
 </head>
 <body>

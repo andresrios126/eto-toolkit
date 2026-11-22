@@ -67,6 +67,7 @@ Diagramas dibujados en la app (funcionan sin internet): visión general DP, redu
 ### ⚙️ Ajustes y apariencia
 - Toca **⚙️** (arriba a la derecha, en cualquier pantalla). Ahí eliges el tema: **Claro** (predeterminado), **Arena**, **Menta**, **Cielo**, **Durazno**, **Lavanda**, **Grafito** o **Noche eléctrica**.
 - **Color de fondo personalizado**: elige un color de la paleta o cualquier color; la app ajusta tarjetas, bordes y textos automáticamente para que se lean bien.
+- **📱 Ícono de la app**: 12 opciones (Noche, Amarillo, Blanco, Azul, Verde, Atardecer, Morado, Grafito, Círculo, ETO, Alto voltaje, Cielo). En iPhone el ícono se fija al agregar la app, así que para cambiarlo: exporta un respaldo, copia el enlace que te da la app (…/?icon=nombre), ábrelo en Safari, agrégala de nuevo a la pantalla de inicio, importa el respaldo y borra el ícono viejo.
 - También: velocidad de la voz, sonidos del juego, respaldo y **🔄 Buscar actualización**.
 
 ### 💾 Datos y respaldo

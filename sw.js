@@ -1,6 +1,6 @@
 // Service worker: guarda la app en caché para que funcione sin internet.
 // Al cambiar cualquier archivo, sube CACHE_VERSION para que los iPhones descarguen la nueva versión.
-const CACHE_VERSION = 'eto-toolkit-v3.1.1';
+const CACHE_VERSION = 'eto-toolkit-v3.2.0';
 
 const ASSETS = [
   './',
@@ -35,6 +35,19 @@ const ASSETS = [
   './icons/icon-512.png',
   './icons/icon-maskable-512.png',
   './icons/apple-touch-icon.png',
+  './js/icons.js',
+  './icons/options/noche-180.png',
+  './icons/options/amarillo-180.png',
+  './icons/options/blanco-180.png',
+  './icons/options/azul-180.png',
+  './icons/options/verde-180.png',
+  './icons/options/naranja-180.png',
+  './icons/options/morado-180.png',
+  './icons/options/grafito-180.png',
+  './icons/options/circulo-180.png',
+  './icons/options/eto-180.png',
+  './icons/options/casco-180.png',
+  './icons/options/cielo-180.png',
 ];
 
 self.addEventListener('install', (event) => {

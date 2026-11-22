@@ -3,6 +3,7 @@
 import { exportBackup, importBackup, requestPersistence, getSetting, setSetting } from './db.js';
 import { rateControl } from './components.js';
 import { initLookup } from './lookup.js';
+import { APP_ICONS, iconPath, currentIcon, applyIcon, installUrl } from './icons.js';
 import { THEMES, CUSTOM_SWATCHES, applyTheme, currentTheme, saveTheme, themeVars, DEFAULT_THEME } from './themes.js';
 import { initSpeech, stop as stopSpeech } from './speech.js';
 import { h, toast, setHeader } from './ui.js';
@@ -19,7 +20,7 @@ import { TERMS } from './data/glossary.js';
 import { FAULTS } from './data/faults.js';
 import { DIAGRAMS } from './data/diagrams.js';
 
-const APP_VERSION = '3.1.1';
+const APP_VERSION = '3.2.0';
 
 const MODULES = [
   { key: 'juego', icon: '🎮', title: 'Juego', desc: 'Opción múltiple y escritura', cls: 'tile-game' },
@@ -59,6 +60,47 @@ async function viewHome() {
       ),
     ),
     h('p', { class: 'muted center small' }, `v${APP_VERSION} · Los datos se guardan solo en este dispositivo.`),
+  );
+}
+
+// ---------- Ícono de la app ----------
+function iconSection() {
+  let chosen = currentIcon();
+  const grid = h('div', { class: 'icon-grid' });
+  const urlInput = h('input', { class: 'input small-input', type: 'text', readonly: true });
+  const copyBtn = h('button', { class: 'btn btn-primary' }, '📋 Copiar enlace');
+  const steps = h('section', { class: 'card icon-steps', hidden: true },
+    h('h2', {}, '📲 Cómo aplicar el ícono nuevo'),
+    h('p', { class: 'muted small' }, 'En iPhone el ícono se fija al agregar la app a la pantalla de inicio. Para cambiarlo hay que agregarla de nuevo. Sigue estos pasos para no perder tus datos:'),
+    h('ol', { class: 'steps' },
+      h('li', {}, h('b', {}, 'Exporta un respaldo'), ' (⚙️ → Respaldo → Exportar) y guárdalo en Archivos.'),
+      h('li', {}, h('b', {}, 'Copia el enlace'), ' de abajo y ábrelo en ', h('b', {}, 'Safari'), '.'),
+      h('li', {}, 'En Safari toca ', h('b', {}, 'Compartir → Agregar a pantalla de inicio'), '. Aparecerá con el ícono nuevo.'),
+      h('li', {}, 'Abre la app nueva y ', h('b', {}, 'importa el respaldo'), ' (⚙️ → Respaldo → Importar).'),
+      h('li', {}, 'Cuando veas tus datos en la app nueva, ', h('b', {}, 'borra el ícono viejo'), ' (mantenlo presionado → Eliminar app).'),
+    ),
+    urlInput,
+    h('div', { class: 'btn-row' }, copyBtn, h('a', { class: 'btn btn-secondary', href: '#/respaldo' }, '💾 Respaldo')),
+  );
+  copyBtn.onclick = async () => {
+    try { await navigator.clipboard.writeText(urlInput.value); toast('✅ Enlace copiado: pégalo en Safari'); }
+    catch (_) { urlInput.select(); toast('Mantén presionado el enlace para copiarlo'); }
+  };
+  const render = () => {
+    grid.replaceChildren(...APP_ICONS.map(([id, name]) => h('button', {
+      class: `icon-opt ${chosen === id ? 'active' : ''}`, 'aria-label': `Ícono ${name}`,
+      onclick: () => { chosen = id; applyIcon(id); setSetting('icon', id); render(); steps.hidden = false; steps.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); },
+    }, h('img', { src: iconPath(id), alt: '', width: 64, height: 64 }), h('span', {}, name))));
+    urlInput.value = installUrl(chosen);
+  };
+  render();
+  return h('div', { class: 'stack' },
+    h('h2', { class: 'label' }, '📱 Ícono de la app'),
+    h('section', { class: 'card' },
+      h('p', { class: 'muted small' }, 'Elige el ícono para la pantalla de inicio.'),
+      grid,
+    ),
+    steps,
   );
 }
 
@@ -140,6 +182,7 @@ function viewSettings() {
       h('label', { class: 'label' }, 'O elige cualquier color (toca el recuadro):'),
       colorInput,
     ),
+    iconSection(),
     h('h2', { class: 'label' }, '🔊 Voz y sonido'),
     h('section', { class: 'card' },
       h('p', { class: 'muted small' }, 'Velocidad de la voz en inglés (también se cambia en cada pantalla):'),
