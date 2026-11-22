@@ -142,7 +142,7 @@ async function viewDetail(root, id) {
       ),
       h('a', { class: 'btn btn-ghost', href: `#/entrevistas/q/${q.id}/editar` }, '✏️ Editar mi respuesta'),
     ),
-    ['dp', 'kpos', 'cv'].includes(q.cat) ? await imageStrip(['dp', 'sensors', 'network'], '📷 Tus imágenes de DP') : null,
+    ['dp', 'kpos', 'cv', 'nav', 'auto'].includes(q.cat) ? await imageStrip(['dp', 'kpos', 'cv'].includes(q.cat) ? ['dp', 'sensors', 'network'] : [], '📷 Tus imágenes de DP', q.id) : null,
     q.kp?.length ? h('section', { class: 'card' },
       h('h2', { class: 'label' }, '🎯 Puntos clave que esperan escuchar'),
       h('ul', { class: 'steps' }, ...q.kp.map((k) => h('li', {}, k))),

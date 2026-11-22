@@ -1,7 +1,7 @@
 // "Mis imágenes": fotos o capturas propias para estudiar (por ejemplo, diapositivas de cursos).
 // Se guardan SOLO en el dispositivo (IndexedDB) y en el respaldo; nunca se publican en la web.
 
-import { db } from '../db.js';
+import { db, importBackup } from '../db.js';
 import { h, toast, setHeader } from '../ui.js';
 
 export const IMAGE_TOPICS = {
@@ -37,25 +37,48 @@ async function fileToDataUrl(file) {
 }
 
 export async function getImages(topics) {
-  const all = (await db.getAll('images')).sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1));
+  const all = (await db.getAll('images')).sort((a, b) => (a.title || '').localeCompare(b.title || '', 'es', { numeric: true }));
   return topics ? all.filter((i) => topics.includes(i.topic)) : all;
 }
 
 // Tira de miniaturas para mostrar en otras pantallas (preguntas DP, diagramas…).
-export async function imageStrip(topics, title = '📷 Tus imágenes') {
-  const imgs = await getImages(topics);
+// Si hay imágenes vinculadas a esta pantalla (refs), se muestran primero.
+export async function imageStrip(topics, title = '📷 Tus imágenes', refId = null) {
+  const all = await getImages();
+  const linked = refId ? all.filter((i) => i.refs?.includes(refId)) : [];
+  const imgs = linked.length ? linked : all.filter((i) => topics.includes(i.topic));
   if (!imgs.length) return null;
   return h('section', { class: 'card' },
-    h('h2', { class: 'label' }, title),
+    h('h2', { class: 'label' }, linked.length ? '📷 Imágenes de este tema' : title),
     h('div', { class: 'img-strip' }, ...imgs.slice(0, 12).map((i) =>
       h('a', { href: `#/guia/img/${i.id}`, class: 'img-thumb' }, h('img', { src: i.data, alt: i.title || '', loading: 'lazy' })))),
   );
+}
+
+// Importa un paquete de imágenes (.json) sin borrar los datos actuales.
+async function importPack(file) {
+  const json = JSON.parse(await file.text());
+  if (!json?.data?.images?.length) throw new Error('El archivo no contiene imágenes de ETO Toolkit.');
+  await importBackup({ ...json, merge: true, data: { images: json.data.images } });
+  return json.data.images.length;
 }
 
 // Sección de la Guía visual: agregar y ver imágenes.
 export async function imagesSection(onChange) {
   const imgs = await getImages();
   const input = h('input', { type: 'file', accept: 'image/*', multiple: true, hidden: true });
+  const packInput = h('input', { type: 'file', accept: 'application/json,.json', hidden: true });
+  packInput.addEventListener('change', async () => {
+    const f = packInput.files[0];
+    packInput.value = '';
+    if (!f) return;
+    try {
+      toast('Importando paquete…');
+      const n = await importPack(f);
+      toast(`✅ ${n} imágenes agregadas a este dispositivo`);
+      onChange?.();
+    } catch (e) { alert(`No se pudo importar: ${e.message}`); }
+  });
   const topicSel = h('select', { class: 'input small-input', 'aria-label': 'Tema' },
     ...Object.entries(IMAGE_TOPICS).map(([k, v]) => h('option', { value: k }, v)));
   input.addEventListener('change', async () => {
@@ -78,11 +101,19 @@ export async function imagesSection(onChange) {
     onChange?.();
   });
 
-  const grid = h('div', { class: 'img-grid' }, ...imgs.map((i) =>
-    h('a', { class: 'img-card', href: `#/guia/img/${i.id}` },
-      h('img', { src: i.data, alt: '', loading: 'lazy' }),
-      h('span', {}, i.title || 'Sin título'),
-      h('small', { class: 'muted' }, IMAGE_TOPICS[i.topic] || ''))));
+  const card = (i) => h('a', { class: 'img-card', href: `#/guia/img/${i.id}` },
+    h('img', { src: i.data, alt: '', loading: 'lazy' }),
+    h('span', {}, i.title || 'Sin título'),
+    h('small', { class: 'muted' }, IMAGE_TOPICS[i.topic] || ''));
+  // Con muchas imágenes, se muestran 9 y un botón para ver todas (agrupadas por tema).
+  const grid = h('div', { class: 'img-grid' }, ...imgs.slice(0, 9).map(card));
+  const more = imgs.length > 9 ? h('button', { class: 'btn btn-ghost', onclick: () => {
+    grid.replaceWith(h('div', { class: 'stack' }, ...Object.entries(IMAGE_TOPICS).map(([k, v]) => {
+      const list = imgs.filter((i) => i.topic === k);
+      return list.length ? h('div', { class: 'stack' }, h('h3', { class: 'label' }, `${v} (${list.length})`), h('div', { class: 'img-grid' }, ...list.map(card))) : null;
+    })));
+    more.remove();
+  } }, `Ver todas (${imgs.length})`) : null;
 
   return h('section', { class: 'card private-images' },
     h('div', { class: 'row-between' },
@@ -91,8 +122,11 @@ export async function imagesSection(onChange) {
     ),
     h('p', { class: 'muted small' }, 'Agrega fotos o capturas (por ejemplo, de tus cursos). Se guardan solo en este dispositivo y en tu respaldo; no se publican en internet.'),
     h('div', { class: 'btn-row' }, topicSel, h('button', { class: 'btn btn-primary', onclick: () => input.click() }, '➕ Agregar')),
-    input,
+    h('button', { class: 'btn btn-secondary', onclick: () => packInput.click() }, '📦 Importar paquete de imágenes (.json)'),
+    imgs.length ? h('p', { class: 'muted small' }, `${imgs.length} imagen(es) en este dispositivo.`) : null,
+    input, packInput,
     imgs.length ? grid : h('p', { class: 'muted small center' }, 'Aún no tienes imágenes.'),
+    more,
   );
 }
 

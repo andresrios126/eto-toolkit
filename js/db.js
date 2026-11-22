@@ -97,7 +97,8 @@ export async function importBackup(json) {
     // Un respaldo antiguo puede no traer algún store (por ejemplo, imágenes): en ese caso se conserva lo actual.
     if (!Array.isArray(json.data[s])) continue;
     const store = t.objectStore(s);
-    store.clear();
+    // merge: true (por ejemplo, un paquete de imágenes) agrega sin borrar lo que ya existe.
+    if (!json.merge) store.clear();
     for (const row of json.data[s] || []) store.put(row);
   }
   await new Promise((resolve, reject) => {

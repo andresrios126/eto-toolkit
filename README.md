@@ -62,7 +62,7 @@ Aplicación web progresiva (PWA) en español para **Electro-Technical Officers**
 - **➕ Mis casos**: agrega las fallas que tú resolviste; también aparecen en el juego.
 
 ### 🧭 Guía visual
-- **📷 Mis imágenes (privadas)**: agrega fotos o capturas propias (por ejemplo, diapositivas de tus cursos). Se guardan solo en tu dispositivo y en tu respaldo; nunca se suben a GitHub ni a la web. También aparecen en las preguntas y diagramas de DP. Zoom con dos dedos.
+- **📷 Mis imágenes (privadas)**: agrega fotos o capturas propias (por ejemplo, diapositivas de tus cursos). Se guardan solo en tu dispositivo y en tu respaldo; nunca se suben a GitHub ni a la web. También aparecen en las preguntas y diagramas de DP. Zoom con dos dedos. Con **📦 Importar paquete** se agregan muchas imágenes a la vez (con título y vínculo a su tema) sin borrar nada.
 Diagramas dibujados en la app (funcionan sin internet): visión general DP, redundancia DP2 con cuadro dividido, clases DP, referencias de posición, niveles de alerta, diagrama unifilar, tipos de voltaje, estrella/triángulo, sincronización, VFD, tipos de propulsores, lazo 4-20 mA, radar, LOTO y tabla de sensores. Cada uno con explicación en español y términos clave para escuchar en inglés.
 
 ### ⚙️ Ajustes y apariencia

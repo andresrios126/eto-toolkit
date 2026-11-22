@@ -1,6 +1,6 @@
 // Service worker: guarda la app en caché para que funcione sin internet.
 // Al cambiar cualquier archivo, sube CACHE_VERSION para que los iPhones descarguen la nueva versión.
-const CACHE_VERSION = 'eto-toolkit-v3.3.0';
+const CACHE_VERSION = 'eto-toolkit-v3.3.1';
 
 const ASSETS = [
   './',

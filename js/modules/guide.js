@@ -47,7 +47,7 @@ async function viewDetail(root, id) {
         ...d.terms.map(([en, es]) => h('button', { class: 'term-chip', onclick: () => speak(en) }, h('b', {}, en), h('span', {}, es))),
       ),
     ) : null,
-    DP_DIAGRAMS.includes(d.id) ? await imageStrip(['dp', 'sensors', 'network'], '📷 Tus imágenes de DP') : null,
+    DP_DIAGRAMS.includes(d.id) ? await imageStrip(['dp', 'sensors', 'network'], '📷 Tus imágenes de DP', d.id) : null,
     rateControl(),
     h('div', { class: 'btn-row' },
       prev ? h('a', { class: 'btn btn-ghost', href: `#/guia/d/${prev.id}` }, '← Anterior') : h('span'),

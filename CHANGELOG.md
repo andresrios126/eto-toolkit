@@ -1,5 +1,10 @@
 # Historial de cambios
 
+## v3.3.1 — Paquetes de imágenes privadas
+- Mis imágenes: **📦 Importar paquete de imágenes (.json)** sin borrar los datos actuales.
+- Las imágenes pueden vincularse a preguntas y diagramas concretos: se muestran como "Imágenes de este tema".
+- Con muchas imágenes, la Guía visual muestra 9 y un botón "Ver todas", agrupadas por tema y ordenadas por título.
+
 ## v3.3.0 — K-Pos, imágenes privadas y repaso antes de exámenes
 - **K-Pos (mantenimiento DP)**: 19 preguntas de entrevista nuevas (subsistemas DP, 6 grados de libertad, modelo y residual, nomenclatura DP-XY, clases IMO, redundancia, modos, estación de operador, gabinete DP, interfaces de sensores y referencias, red doble, RS-232/RS-422, NMEA 0183, joystick independiente, respaldo del sistema, FAT/CAT/FMEA, búsqueda de fallas), redactadas con palabras propias a partir de los temas de un curso de mantenimiento K-Pos.
 - **Glosario**: 42 términos de K-Pos (345 en total).
