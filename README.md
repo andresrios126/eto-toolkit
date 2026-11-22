@@ -114,6 +114,10 @@ La app se actualiza sola: cuando la abres con internet y hay una versión nueva,
 
 ## 🛠️ Para desarrolladores
 
+- **Historial de cambios:** [`CHANGELOG.md`](CHANGELOG.md)
+- **Guía para mejoras futuras e ideas pendientes:** [`MEJORAS.md`](MEJORAS.md)
+- **Versión estable respaldada:** etiqueta `v3.2.0`
+
 HTML, CSS y JavaScript puros (módulos ES), sin frameworks ni paso de compilación.
 
 ```
