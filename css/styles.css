@@ -343,6 +343,8 @@ p { margin: 0 0 10px; }
   box-shadow: 0 4px 0 var(--shadow);
 }
 .tile:active { transform: translateY(3px); box-shadow: none; }
+/* Si queda una tarjeta sola en la última fila, ocupa todo el ancho (simétrico) */
+.tile:last-child:nth-child(odd) { grid-column: 1 / -1; min-height: 110px; }
 .tile-icon {
   width: 56px; height: 56px; border-radius: 16px; display: grid; place-items: center;
   font-size: 30px; background: var(--tile-tint, var(--surface-2));

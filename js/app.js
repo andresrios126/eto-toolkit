@@ -18,7 +18,7 @@ import { TERMS } from './data/glossary.js';
 import { FAULTS } from './data/faults.js';
 import { DIAGRAMS } from './data/diagrams.js';
 
-const APP_VERSION = '3.0.0';
+const APP_VERSION = '3.0.1';
 
 const MODULES = [
   { key: 'juego', icon: '🎮', title: 'Juego', desc: 'Opción múltiple y escritura', cls: 'tile-game' },
@@ -28,7 +28,6 @@ const MODULES = [
   { key: 'fallas', icon: '🔧', title: 'Fallas', desc: `${FAULTS.length} casos de diagnóstico`, cls: 'tile-fault' },
   { key: 'guia', icon: '🧭', title: 'Guía visual', desc: `${DIAGRAMS.length} diagramas de referencia`, cls: 'tile-guide' },
   { key: 'ingles', icon: '🇬🇧', title: 'Inglés', desc: 'Tiempos verbales y verbos', cls: 'tile-eng' },
-  { key: 'ajustes', icon: '⚙️', title: 'Ajustes', desc: 'Tema, voz, sonido y respaldo', cls: 'tile-set' },
 ];
 
 const root = document.getElementById('app');
