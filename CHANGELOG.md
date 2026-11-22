@@ -1,5 +1,13 @@
 # Historial de cambios
 
+## v3.4.0 — Cuentas de usuario y sincronización entre dispositivos
+- Ajustes → **👤 Cuenta**: crear cuenta o iniciar sesión con **usuario y contraseña (sin correo)**.
+- La sesión queda abierta en el dispositivo hasta tocar "Cerrar sesión".
+- Cada avance se sincroniza solo (respuestas, juego, glosario, fallas, inglés, simulacros), combinando el progreso de todos los dispositivos (mayor XP, mejores estrellas y notas, lo editado más reciente).
+- Sin internet todo sigue funcionando; los cambios se suben al volver la conexión (reintento automático).
+- Sin cuenta se puede usar todo; el avance queda solo en ese dispositivo.
+- Pendiente: conectar el proyecto de Firebase (ver `MEJORAS.md`).
+
 ## v3.3.1 — Paquetes de imágenes privadas
 - Mis imágenes: **📦 Importar paquete de imágenes (.json)** sin borrar los datos actuales.
 - Las imágenes pueden vincularse a preguntas y diagramas concretos: se muestran como "Imágenes de este tema".

@@ -723,4 +723,11 @@ select.input { appearance: auto; }
 
 .nowrap { white-space: nowrap; }
 
+.account { gap: 10px; }
+.acc-user { font-size: 18px; }
+.acc-msg { margin: 0; color: var(--danger); min-height: 1em; }
+.segmented.full { display: flex; }
+.segmented.full button { flex: 1; min-width: 0; }
+.home-account { display: block; text-decoration: none; }
+
 [hidden] { display: none !important; }

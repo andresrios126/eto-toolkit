@@ -44,6 +44,19 @@ function wrap(req) {
   });
 }
 
+// Aviso de cambios (lo usa la sincronización en la nube). Se puede silenciar al aplicar datos sincronizados.
+const listeners = new Set();
+let silent = false;
+export function onDataChange(fn) { listeners.add(fn); return () => listeners.delete(fn); }
+export async function withoutChangeEvents(fn) {
+  silent = true;
+  try { return await fn(); } finally { silent = false; }
+}
+function emitChange(store) {
+  if (silent) return;
+  for (const fn of listeners) { try { fn(store); } catch (_) { /* nada */ } }
+}
+
 async function tx(store, mode, fn) {
   const db = await openDB();
   const t = db.transaction(store, mode);
@@ -53,6 +66,7 @@ async function tx(store, mode, fn) {
     t.onerror = () => reject(t.error);
     t.onabort = () => reject(t.error);
   });
+  if (mode === 'readwrite') emitChange(store);
   return result instanceof IDBRequest ? result.result : result;
 }
 
@@ -106,6 +120,7 @@ export async function importBackup(json) {
     t.onerror = () => reject(t.error);
     t.onabort = () => reject(t.error);
   });
+  emitChange('import');
 }
 
 // Pide al navegador que no borre los datos automáticamente (si lo soporta).

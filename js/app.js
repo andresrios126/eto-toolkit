@@ -3,6 +3,7 @@
 import { exportBackup, importBackup, requestPersistence, getSetting, setSetting } from './db.js';
 import { rateControl } from './components.js';
 import { initLookup } from './lookup.js';
+import { initCloud, cloudConfigured, getSession, getStatus, signIn, signUp, signOut, syncNow } from './cloud.js';
 import { APP_ICONS, iconPath, currentIcon, applyIcon, installUrl } from './icons.js';
 import { THEMES, CUSTOM_SWATCHES, applyTheme, currentTheme, saveTheme, themeVars, DEFAULT_THEME } from './themes.js';
 import { initSpeech, stop as stopSpeech } from './speech.js';
@@ -20,7 +21,7 @@ import { TERMS } from './data/glossary.js';
 import { FAULTS } from './data/faults.js';
 import { DIAGRAMS } from './data/diagrams.js';
 
-const APP_VERSION = '3.3.1';
+const APP_VERSION = '3.4.0';
 
 const MODULES = [
   { key: 'juego', icon: '🎮', title: 'Juego', desc: 'Opción múltiple y escritura', cls: 'tile-game' },
@@ -59,7 +60,9 @@ async function viewHome() {
         )
       ),
     ),
-    h('p', { class: 'muted center small' }, `v${APP_VERSION} · Los datos se guardan solo en este dispositivo.`),
+    h('a', { class: 'muted center small home-account', href: '#/ajustes' },
+      getSession() ? `☁️ Sincronizado como ${getSession().username}` : cloudConfigured() ? '👤 Sin cuenta: el avance se guarda solo en este dispositivo (inicia sesión en ⚙️)' : 'Los datos se guardan en este dispositivo.'),
+    h('p', { class: 'muted center small' }, `v${APP_VERSION}`),
   );
 }
 
@@ -102,6 +105,77 @@ function iconSection() {
     ),
     steps,
   );
+}
+
+// ---------- Cuenta (usuario + contraseña, sincronización) ----------
+function accountSection() {
+  const wrap = h('div', { class: 'stack' });
+  const fmt = (iso) => (iso ? new Date(iso).toLocaleString('es', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : 'nunca');
+
+  const render = () => {
+    const ses = getSession();
+    if (!cloudConfigured()) {
+      wrap.replaceChildren(h('h2', { class: 'label' }, '👤 Cuenta'), h('section', { class: 'card' },
+        h('p', {}, 'La sincronización entre dispositivos aún no está activada.'),
+        h('p', { class: 'muted small' }, 'Falta conectar la base de datos en la nube. Mientras tanto, todo funciona y se guarda en este dispositivo.')));
+      return;
+    }
+    if (ses) {
+      const st = getStatus();
+      const state = st.syncing ? '🔄 Sincronizando…' : st.error ? `⚠️ ${st.error}` : st.pending ? '⏳ Cambios pendientes de sincronizar' : `✅ Sincronizado · ${fmt(st.lastSync)}`;
+      const syncBtn = h('button', { class: 'btn btn-primary' }, '🔄 Sincronizar ahora');
+      syncBtn.onclick = async () => { syncBtn.disabled = true; await syncNow(); render(); };
+      wrap.replaceChildren(h('h2', { class: 'label' }, '👤 Cuenta'), h('section', { class: 'card account' },
+        h('div', { class: 'row-between' }, h('strong', { class: 'acc-user' }, `👤 ${ses.username}`), h('span', { class: 'tag tag-ok' }, 'sesión iniciada')),
+        h('p', { class: 'small' }, state),
+        h('p', { class: 'muted small' }, 'Tu avance se guarda y se sincroniza solo cada vez que haces algo. Sin internet se guarda aquí y se sube al volver la conexión. Las imágenes privadas no se sincronizan.'),
+        h('div', { class: 'btn-row' }, syncBtn,
+          h('button', { class: 'btn btn-danger', onclick: () => {
+            if (!confirm('¿Cerrar sesión en este dispositivo? Tu avance queda guardado en la nube y en este dispositivo.')) return;
+            signOut(); render();
+          } }, 'Cerrar sesión')),
+      ));
+      return;
+    }
+    let mode = 'login';
+    const user = h('input', { class: 'input', type: 'text', placeholder: 'Usuario', autocomplete: 'username', autocapitalize: 'none', autocorrect: 'off', spellcheck: 'false' });
+    const pass = h('input', { class: 'input', type: 'password', placeholder: 'Contraseña (mínimo 6)', autocomplete: 'current-password' });
+    const pass2 = h('input', { class: 'input', type: 'password', placeholder: 'Repite la contraseña', autocomplete: 'new-password', hidden: true });
+    const msg = h('p', { class: 'small acc-msg' });
+    const go = h('button', { class: 'btn btn-primary btn-xl' }, 'Iniciar sesión');
+    const tabs = h('div', { class: 'segmented full' });
+    const paintTabs = () => {
+      tabs.replaceChildren(
+        h('button', { class: mode === 'login' ? 'active' : '', onclick: () => { mode = 'login'; paintTabs(); } }, 'Iniciar sesión'),
+        h('button', { class: mode === 'signup' ? 'active' : '', onclick: () => { mode = 'signup'; paintTabs(); } }, 'Crear cuenta'));
+      pass2.hidden = mode !== 'signup';
+      pass.setAttribute('autocomplete', mode === 'signup' ? 'new-password' : 'current-password');
+      go.textContent = mode === 'signup' ? 'Crear cuenta' : 'Iniciar sesión';
+      msg.textContent = '';
+    };
+    paintTabs();
+    go.onclick = async () => {
+      msg.textContent = '';
+      if (mode === 'signup' && pass.value !== pass2.value) { msg.textContent = '⚠️ Las contraseñas no coinciden.'; return; }
+      go.disabled = true; go.textContent = 'Conectando…';
+      try {
+        const u = mode === 'signup' ? await signUp(user.value, pass.value) : await signIn(user.value, pass.value);
+        toast(`✅ Sesión iniciada como ${u}`);
+        render();
+      } catch (e) {
+        msg.textContent = `⚠️ ${e.message}`;
+        go.disabled = false; go.textContent = mode === 'signup' ? 'Crear cuenta' : 'Iniciar sesión';
+      }
+    };
+    wrap.replaceChildren(h('h2', { class: 'label' }, '👤 Cuenta'), h('section', { class: 'card account' },
+      h('p', { class: 'small' }, 'Inicia sesión una vez en cada dispositivo y tu avance será el mismo en todos. Sin cuenta también puedes usar todo; solo no se sincroniza.'),
+      tabs, user, pass, pass2, msg, go,
+      h('p', { class: 'muted small' }, '🔒 Sin correo: solo usuario y contraseña. Guarda bien tu contraseña: no se puede recuperar por correo.'),
+    ));
+  };
+  render();
+  window.addEventListener('eto-cloud-status', () => { if (wrap.isConnected && !wrap.querySelector('input:focus')) render(); });
+  return wrap;
 }
 
 function viewSettings() {
@@ -173,6 +247,7 @@ function viewSettings() {
   };
 
   root.replaceChildren(
+    accountSection(),
     h('h2', { class: 'label' }, '🎨 Tema'),
     grid,
     h('section', { class: 'card' },
@@ -295,6 +370,11 @@ async function start() {
   await initSpeech();
   requestPersistence();
   initLookup();
+  initCloud();
+  // Si la sincronización trajo avance de otro dispositivo, refrescar pantallas de resumen.
+  window.addEventListener('eto-cloud-updated', () => {
+    if (/^(#\/?)?$|^#\/(ajustes|juego|ingles)$/.test(location.hash)) route();
+  });
   window.addEventListener('hashchange', route);
   route();
 

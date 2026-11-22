@@ -1,24 +1,27 @@
 # Guía para mejoras futuras
 
-## ▶️ Próximo paso pendiente: cuentas de usuario (sincronizar progreso entre dispositivos)
-Acordado, pendiente de iniciar. Objetivo: iniciar sesión una vez por dispositivo (iPhone, PC…) y tener siempre el mismo progreso.
+## ▶️ Cuentas de usuario: falta conectar Firebase
+La función ya está hecha y probada (v3.4.0): **usuario + contraseña sin correo**, sesión que queda abierta hasta "Cerrar sesión", sincronización automática con combinación del avance, y funciona sin internet. Solo falta conectar el proyecto de Firebase del dueño.
 
-**Plan (Firebase, gratis):**
-- Ajustes → **Cuenta**: crear cuenta, iniciar sesión, cerrar sesión, recuperar contraseña (correo + contraseña, manejados por Firebase Auth).
-- Sincronización automática del respaldo (todas las stores de IndexedDB y ajustes) en Firestore, en un documento por usuario.
-- Funciona sin conexión: guarda local y sincroniza al volver la señal.
-- Combinación inteligente: mayor XP, mejores estrellas y notas, respuestas / términos / casos editados más recientes.
-- Reglas de seguridad: cada usuario solo lee y escribe su propio documento.
-- Se puede seguir usando sin cuenta.
+**Pasos en console.firebase.google.com (≈10 min):**
+1. **Crear proyecto** (p. ej. `eto-toolkit`; Google Analytics se puede desactivar).
+2. **Compilación → Authentication → Comenzar → Correo electrónico/contraseña → Habilitar → Guardar.** (La app usa un "correo" técnico interno `usuario@eto-toolkit.app`; nunca se envían correos.)
+3. **Compilación → Firestore Database → Crear base de datos → modo producción** → región cercana.
+4. En **Firestore → Reglas**, pegar y **Publicar**:
+```
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /users/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+  }
+}
+```
+5. **Configuración del proyecto (⚙️) → General → Tus apps → Web (`</>`)** → registrar `eto-toolkit` → copiar **`apiKey`** y **`projectId`** y pasárselos a Claude (no son secretos).
+6. Claude los pone en `js/cloud-config.js` y publica.
 
-**Lo que debe hacer el dueño en console.firebase.google.com (≈10 min):**
-1. Crear proyecto (p. ej. `eto-toolkit`, sin Analytics).
-2. Authentication → Get started → **Email/Password** → Habilitar.
-3. Firestore Database → Crear base de datos → modo **producción**.
-4. Configuración del proyecto → Tus apps → **Web (`</>`)** → registrar app `eto-toolkit`.
-5. Copiar el bloque **`firebaseConfig`** y pegarlo en la sesión de Claude (no es secreto; nunca compartir contraseñas).
-
-**Para retomarlo**, en Claude Code: *"Continúa con las cuentas de usuario de ETO Toolkit (ver MEJORAS.md). Aquí está mi firebaseConfig: …"*
+**Notas:** las contraseñas las guarda Firebase (nunca la app). Como no hay correo, una contraseña olvidada no se recupera: en Firebase → Authentication se borra ese usuario y se vuelve a crear con el mismo nombre; el avance guardado en cada dispositivo se conserva y se vuelve a subir al iniciar sesión. Las imágenes privadas no se sincronizan.
 
 ## Cómo retomar el proyecto
 1. Abre una sesión nueva de Claude Code con este repositorio (`andresrios126/eto-toolkit`).
@@ -66,7 +69,7 @@ Acordado, pendiente de iniciar. Objetivo: iniciar sesión una vez por dispositiv
 > Al cambiar archivos, sube `CACHE_VERSION` en `sw.js` (y `APP_VERSION` en `js/app.js`) para que el iPhone descargue la versión nueva.
 
 ## Ideas pendientes
-- **Cuentas de usuario y sincronización** (ver "Próximo paso pendiente" arriba).
+- **Cuentas de usuario**: hechas; falta conectar Firebase (ver arriba).
 - **Repaso inteligente**: que el juego repita más seguido lo que fallas (repetición espaciada).
 - **Notas por empresa**: apuntar lo que investigues de cada empresa antes de su entrevista.
 - **Más preguntas de "Mis equipos y sistemas"** a medida que trabajes con equipos nuevos.

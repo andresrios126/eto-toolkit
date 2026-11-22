@@ -65,6 +65,11 @@ Aplicación web progresiva (PWA) en español para **Electro-Technical Officers**
 - **📷 Mis imágenes (privadas)**: agrega fotos o capturas propias (por ejemplo, diapositivas de tus cursos). Se guardan solo en tu dispositivo y en tu respaldo; nunca se suben a GitHub ni a la web. También aparecen en las preguntas y diagramas de DP. Zoom con dos dedos. Con **📦 Importar paquete** se agregan muchas imágenes a la vez (con título y vínculo a su tema) sin borrar nada.
 Diagramas dibujados en la app (funcionan sin internet): visión general DP, redundancia DP2 con cuadro dividido, clases DP, referencias de posición, niveles de alerta, diagrama unifilar, tipos de voltaje, estrella/triángulo, sincronización, VFD, tipos de propulsores, lazo 4-20 mA, radar, LOTO y tabla de sensores. Cada uno con explicación en español y términos clave para escuchar en inglés.
 
+### 👤 Cuenta y sincronización
+- En **⚙️ → Cuenta**: crea una cuenta con **usuario y contraseña** (sin correo) e inicia sesión **una vez** en cada dispositivo. Tu avance se sincroniza solo entre todos.
+- Funciona sin internet (sincroniza al volver la conexión) y también sin cuenta (el avance queda en ese dispositivo).
+- Requiere conectar un proyecto de Firebase (pasos en `MEJORAS.md`).
+
 ### ⚙️ Ajustes y apariencia
 - Toca **⚙️** (arriba a la derecha, en cualquier pantalla). Ahí eliges el tema: **Claro** (predeterminado), **Arena**, **Menta**, **Cielo**, **Durazno**, **Lavanda**, **Grafito** o **Noche eléctrica**.
 - **Color de fondo personalizado**: elige un color de la paleta o cualquier color; la app ajusta tarjetas, bordes y textos automáticamente para que se lean bien.
@@ -141,6 +146,8 @@ js/modules/guide.js     Guía visual
 js/modules/mock.js      Simulacro de entrevista
 js/modules/english.js   Sub-app de inglés y exámenes por nivel
 js/lookup.js            Globo de traducción (mantener presionado)
+js/cloud.js             Cuentas y sincronización (Firebase REST)
+js/cloud-config.js      apiKey y projectId de Firebase
 js/data/questions*.js   Preguntas, respuestas modelo y puntos clave
 js/data/glossary*.js    Términos del glosario
 js/data/faults.js       Casos de fallas
