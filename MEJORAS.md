@@ -17,6 +17,10 @@
 3. Título: `ETO Toolkit v3.2.0`. En la descripción pega el resumen de `CHANGELOG.md`.
 4. Toca **Publish release**. GitHub guarda además un ZIP de esa versión.
 
+## Si la app vuelve a una versión vieja
+- En GitHub → **Actions**, no uses **Re-run** en ejecuciones antiguas: volvería a publicar esa versión vieja. El workflow ya tiene una protección que cancela esas ejecuciones.
+- Para volver a publicar la versión actual: **Actions → Publicar en GitHub Pages → Run workflow** (rama `main`).
+
 ## Tus datos personales (progreso, respuestas editadas)
 - No están en GitHub: viven solo en tu iPhone.
 - Respáldalos de vez en cuando: **⚙️ → Respaldo → Exportar** y guarda el archivo en iCloud Drive.

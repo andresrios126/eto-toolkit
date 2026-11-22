@@ -24,6 +24,16 @@ jobs:
       - name: Descargar código
         uses: actions/checkout@v4
 
+      # Protección: si se vuelve a ejecutar ("Re-run") una publicación vieja,
+      # no reemplazar la app con una versión antigua.
+      - name: Comprobar que es la versión más reciente de main
+        run: |
+          git fetch --depth=1 origin main
+          if [ "$(git rev-parse FETCH_HEAD)" != "$GITHUB_SHA" ]; then
+            echo "::error::Esta ejecución es de una versión vieja ($GITHUB_SHA). Se cancela para no reemplazar la app con una versión antigua."
+            exit 1
+          fi
+
       - name: Preparar sitio
         run: |
           mkdir _site
