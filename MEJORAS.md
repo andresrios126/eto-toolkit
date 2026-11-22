@@ -7,8 +7,15 @@
 4. Al subir a `main`, GitHub Pages publica la versión nueva sola y el iPhone se actualiza al abrir la app con internet.
 
 ## Cómo volver a esta versión si algo sale mal
-- La versión estable está etiquetada como **`v3.2.0`** en GitHub (pestaña *Tags* o *Releases*).
-- Para descargarla completa: en GitHub, botón **Code → Download ZIP**, o desde la etiqueta `v3.2.0`.
+- Versión estable **v3.2.0** = commit **`92df86d`** de `main` (pestaña *Commits* en GitHub).
+- Recomendado: créale una *Release* en GitHub (pasos abajo) para encontrarla fácil.
+- Para descargarla completa: en GitHub, botón **Code → Download ZIP** (o desde la Release).
+
+### Crear la Release v3.2.0 en GitHub (1 minuto, desde Safari)
+1. Abre `https://github.com/andresrios126/eto-toolkit/releases/new` (si se ve incompleto: **aA → Solicitar sitio web de escritorio**).
+2. En **Choose a tag** escribe `v3.2.0` y toca **Create new tag**. Deja *Target: main*.
+3. Título: `ETO Toolkit v3.2.0`. En la descripción pega el resumen de `CHANGELOG.md`.
+4. Toca **Publish release**. GitHub guarda además un ZIP de esa versión.
 
 ## Tus datos personales (progreso, respuestas editadas)
 - No están en GitHub: viven solo en tu iPhone.
