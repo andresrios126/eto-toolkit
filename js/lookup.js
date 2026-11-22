@@ -3,7 +3,7 @@
 
 import { DICTIONARY } from './data/dictionary.js';
 import { TERMS } from './data/glossary.js';
-import { IRREGULAR, REGULAR } from './data/english.js';
+import { IRREGULAR, REGULAR, ES_FORMS } from './data/english.js';
 import { speak } from './speech.js';
 import { h } from './ui.js';
 
@@ -37,11 +37,16 @@ function buildDict() {
   };
   for (const [w, es] of Object.entries(DICTIONARY)) add(w, es);
   for (const [base, past, pp, es] of IRREGULAR) {
-    add(base, es);
-    past.split(' / ').forEach((p) => add(p, es, `pasado de "${base}"`));
-    pp.split(' / ').forEach((p) => add(p, es, `participio de "${base}"`));
+    const f = ES_FORMS[base];
+    add(base, f ? `${es} · (yo) ${f[0]}` : es);
+    past.split(' / ').forEach((p) => add(p, f ? `(yo) ${f[1]}` : es, `pasado de "${base}" (${es})`));
+    pp.split(' / ').forEach((p) => add(p, f ? `${f[2]} (he ${f[2]})` : es, `participio de "${base}" (${es})`));
   }
-  for (const [base, past, es] of REGULAR) { add(base, es); add(past, es, `pasado de "${base}"`); }
+  for (const [base, past, es] of REGULAR) {
+    const f = ES_FORMS[base];
+    add(base, f ? `${es} · (yo) ${f[0]}` : es);
+    add(past, f ? `(yo) ${f[1]} · (he) ${f[2]}` : es, `pasado / participio de "${base}" (${es})`);
+  }
   for (const t of TERMS) {
     const base = t.en.replace(/\s*\(.*?\)\s*/g, ' ').split(' / ')[0].trim();
     const words = base.toLowerCase().split(/\s+/);

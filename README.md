@@ -35,7 +35,7 @@ Aplicación web progresiva (PWA) en español para **Electro-Technical Officers**
 - Su propio progreso: XP y nivel **A1 → C2**, separado del progreso ETO.
 - **17 temas**: Present simple / continuous / perfect / perfect continuous, Past simple / continuous / perfect / perfect continuous, Future will / going to / continuous / perfect / perfect continuous, used to, modales, voz pasiva y condicionales.
 - Cada tema: cuándo se usa, estructura (afirmativa, negativa, pregunta), palabras clave, ejemplos con voz y traducción, errores comunes y **10 ejercicios** (escribir el verbo, elegir la forma correcta, identificar el tiempo, traducir).
-- **Verbos**: formas del verbo (base, pasado, participio, -ing), **89 irregulares** con tabla, búsqueda y voz, y **verbos regulares** con reglas de -ed y pronunciación /t/ /d/ /ɪd/.
+- **Verbos**: formas del verbo (base, pasado, participio, -ing), **89 irregulares** con tabla, búsqueda y voz, y **verbos regulares** con reglas de -ed y pronunciación /t/ /d/ /ɪd/. Cada forma muestra su traducción: go = ir · (yo) voy → went = (yo) fui → gone = (he) ido.
 - Práctica mixta y "¿Qué tiempo es?". Las respuestas escritas se corrigen de forma estricta (por ejemplo, "work" no vale por "works").
 - **🎓 Exámenes por nivel (A1, A2, B1, B2, C1)**: se desbloquean al alcanzar ese nivel de XP. 20 preguntas sin pistas ni vidas, sin ver si aciertas hasta el final; se aprueba con 70 %. Al terminar: nota por tema, **qué temas repasar** (con enlace directo), tus errores con la respuesta correcta y la opción de **volver a tomarlo**. Aprobar por primera vez da +50 XP.
 

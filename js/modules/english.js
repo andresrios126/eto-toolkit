@@ -1,7 +1,7 @@
 // Sub-app de inglés general: tiempos verbales, verbos regulares e irregulares.
 // Independiente del contenido ETO: su propio progreso (XP y nivel A1–C2).
 
-import { TENSES, TENSE_GROUPS, IRREGULAR, REGULAR, REGULAR_RULES, ED_SOUNDS, VERB_FORMS } from '../data/english.js';
+import { TENSES, TENSE_GROUPS, IRREGULAR, REGULAR, REGULAR_RULES, ED_SOUNDS, VERB_FORMS, ES_FORMS } from '../data/english.js';
 import { getSetting, setSetting } from '../db.js';
 import { speak } from '../speech.js';
 import { h, toast, setHeader } from '../ui.js';
@@ -100,7 +100,7 @@ function irregularQuestions(n = 10) {
   const out = [];
   for (const v of shuffle(IRREGULAR).slice(0, n)) {
     const [base, past, pp, es] = v;
-    const kind = pick(['past', 'pp', 'mcPast', 'es', 'chain']);
+    const kind = pick(['past', 'pp', 'mcPast', 'es', 'chain', 'esForm']);
     if (kind === 'past') {
       out.push(typeQuestion({ prompt: 'Escribe el PASADO', text: `${base}  (${es})`, answers: pastAlts(past), say: `${base}, ${past.replace(' / ', ' or ')}`, kind: '🔁 Irregular verbs' }));
     } else if (kind === 'pp') {
@@ -112,6 +112,16 @@ function irregularQuestions(n = 10) {
       const wrong = [...new Set([`${base.replace(/e$/, '')}ed`, pastAlts(pp)[0], pick(IRREGULAR.filter((x) => x[0] !== base))[1].split(' / ')[0]])]
         .filter((x) => x !== correct).slice(0, 3);
       out.push(mc(`¿Cuál es el pasado de «${base}»?`, correct, wrong, { sub: `🇪🇸 ${es}`, say: `${base}, ${past}, ${pp}`, sayAfter: true, kind: '🔁 Irregular verbs', optLang: 'en' }));
+    } else if (kind === 'esForm' && ES_FORMS[base]) {
+      const usePp = Math.random() < 0.5;
+      const form = usePp ? pastAlts(pp)[0] : pastAlts(past)[0];
+      const correct = usePp ? `(he) ${ES_FORMS[base][2]}` : `(yo) ${ES_FORMS[base][1]}`;
+      const others = shuffle(IRREGULAR.filter((x) => x[0] !== base && ES_FORMS[x[0]]))
+        .slice(0, 2).map((x) => (usePp ? `(he) ${ES_FORMS[x[0]][2]}` : `(yo) ${ES_FORMS[x[0]][1]}`));
+      // Si pasado y participio son iguales (sat / sat), no usar la otra forma como opción incorrecta.
+      const same = pastAlts(past)[0] === pastAlts(pp)[0];
+      const wrong = [usePp && !same ? `(yo) ${ES_FORMS[base][1]}` : `(yo) ${ES_FORMS[base][0]}`, ...others];
+      out.push(mc(`¿Cómo se traduce «${form}» (${usePp ? 'participio' : 'pasado'})?`, correct, wrong, { sub: usePp ? 'Como en "I have …" = he …' : 'Pasado simple', say: form, kind: '🇬🇧 → 🇪🇸 Verb forms' }));
     } else {
       const wrong = shuffle(IRREGULAR.filter((x) => x[0] !== base)).slice(0, 3).map((x) => x[0]);
       out.push(mc('¿Cómo se dice en inglés?', base, wrong, { big: es, say: base, sayAfter: true, kind: '🇪🇸 → 🇬🇧', optLang: 'en', small: true }));
@@ -467,26 +477,46 @@ function viewForms(root) {
   );
 }
 
+// Tabla de verbos: cada forma en inglés con su traducción al español debajo.
+function verbTable(rows) {
+  const tbody = h('tbody');
+  const render = (q) => {
+    tbody.replaceChildren(...rows.filter((r) => !q || r.search.includes(q)).map((r) =>
+      h('tr', { onclick: () => speak(r.say) },
+        h('td', {}, h('b', { class: 'en-cell' }, r.base), h('span', { class: 'es-form' }, r.esInf), h('span', { class: 'es-form' }, `(yo) ${r.es[0]}`)),
+        h('td', {}, h('span', { class: 'en-cell' }, r.past), h('span', { class: 'es-form' }, `(yo) ${r.es[1]}`)),
+        h('td', {}, h('span', { class: 'en-cell' }, r.pp), h('span', { class: 'es-form' }, `(he) ${r.es[2]}`)),
+      )));
+  };
+  render('');
+  const table = h('table', { class: 'dtable verbs' },
+    h('thead', {}, h('tr', {}, h('th', {}, 'Base · presente'), h('th', {}, 'Pasado'), h('th', {}, 'Participio'))),
+    tbody);
+  return { table, render };
+}
+
+const legend = () => h('section', { class: 'card legend' },
+  h('p', { class: 'small' }, h('b', {}, 'Cómo leer la tabla: '), 'go = ir · (yo) voy → went = (yo) fui → gone = (he) ido.'),
+  h('p', { class: 'small muted' }, 'El pasado en inglés equivale al pretérito (fui) y muchas veces también al imperfecto (iba). El participio se usa con have / has / had (I have gone = he ido) y en la voz pasiva.'),
+);
+
+function irregularRows() {
+  return IRREGULAR.map(([b, p, pp, es]) => {
+    const f = ES_FORMS[b] || ['', '', ''];
+    return { base: b, past: p, pp, esInf: es, es: f, say: `${b}, ${p.replace(' / ', ' or ')}, ${pp.replace(' / ', ' or ')}`,
+      search: `${b} ${p} ${pp} ${es} ${f.join(' ')}`.toLowerCase() };
+  });
+}
+
 function viewIrregular(root) {
   setHeader('Verbos irregulares', '#/ingles');
-  let term = '';
-  const tbody = h('tbody');
-  const render = () => {
-    const q = term.trim().toLowerCase();
-    tbody.replaceChildren(...IRREGULAR.filter((v) => !q || v.join(' ').toLowerCase().includes(q)).map(([b, p, pp, es]) =>
-      h('tr', { onclick: () => speak(`${b}, ${p.replace(' / ', ' or ')}, ${pp.replace(' / ', ' or ')}`) },
-        h('td', { class: 'en-cell' }, h('b', {}, b)), h('td', { class: 'en-cell' }, p), h('td', { class: 'en-cell' }, pp), h('td', { class: 'muted' }, es))));
-  };
-  render();
+  const { table, render } = verbTable(irregularRows());
   root.replaceChildren(
     h('a', { class: 'btn btn-primary btn-xl', href: '#/ingles/practica/irregulares' }, '▶ Practicar irregulares'),
+    legend(),
     h('p', { class: 'muted small center' }, 'Toca una fila para escuchar las tres formas.'),
-    h('input', { type: 'search', class: 'input', placeholder: 'Buscar verbo en inglés o español…', oninput: (e) => { term = e.target.value; render(); } }),
-    h('section', { class: 'card table-card' },
-      h('table', { class: 'dtable verbs' },
-        h('thead', {}, h('tr', {}, h('th', {}, 'Base'), h('th', {}, 'Pasado'), h('th', {}, 'Participio'), h('th', {}, 'Español'))),
-        tbody),
-    ),
+    h('input', { type: 'search', class: 'input', placeholder: 'Buscar en inglés o español…', oninput: (e) => render(e.target.value.trim().toLowerCase()) }),
+    h('section', { class: 'card table-card' }, table),
     rateControl(),
   );
 }
@@ -507,10 +537,12 @@ function viewRegular(root) {
         h('div', {}, h('p', { class: 'ex-en' }, h('b', {}, s), ` ${ex}`), h('p', { class: 'muted small' }, when)),
       )),
     ),
-    h('section', { class: 'card' },
-      h('h2', { class: 'label' }, `📋 ${REGULAR.length} verbos regulares comunes`),
-      h('div', { class: 'term-chips' }, ...REGULAR.map(([b, p, es]) => h('button', { class: 'term-chip', onclick: () => speak(`${b}, ${p}`) }, h('b', {}, `${b} → ${p}`), h('span', {}, es)))),
-    ),
+    h('h2', { class: 'label' }, `📋 ${REGULAR.length} verbos regulares comunes`),
+    legend(),
+    h('section', { class: 'card table-card' }, verbTable(REGULAR.map(([b, p, es]) => {
+      const f = ES_FORMS[b] || ['', '', ''];
+      return { base: b, past: p, pp: p, esInf: es, es: f, say: `${b}, ${p}`, search: '' };
+    })).table),
     rateControl(),
   );
 }
