@@ -5,48 +5,54 @@ import { initSpeech, stop as stopSpeech } from './speech.js';
 import { h, toast, setHeader } from './ui.js';
 import { interviewsRoute } from './modules/interviews.js';
 import { glossaryRoute } from './modules/glossary.js';
+import { gameRoute, statsBar, dailyGoal, nextLesson } from './modules/game.js';
+import { faultsRoute } from './modules/faults.js';
+import { guideRoute } from './modules/guide.js';
+import { getGame } from './game-state.js';
+import { QUESTIONS } from './data/questions.js';
+import { TERMS } from './data/glossary.js';
+import { FAULTS } from './data/faults.js';
+import { DIAGRAMS } from './data/diagrams.js';
 
-const APP_VERSION = '1.1.0';
+const APP_VERSION = '2.0.0';
 
 const MODULES = [
-  { key: 'entrevistas', icon: '🎤', title: 'Entrevistas', desc: 'Preguntas y respuestas en inglés', ready: true },
-  { key: 'glosario', icon: '📖', title: 'Glosario', desc: 'Términos técnicos EN ↔ ES y tarjetas', ready: true },
-  { key: 'certificados', icon: '📜', title: 'Certificados', desc: 'Vencimientos STCW y cursos', ready: false },
-  { key: 'fallas', icon: '⚡', title: 'Fallas', desc: 'Registro de troubleshooting', ready: false },
+  { key: 'juego', icon: '🎮', title: 'Juego', desc: 'Lecciones de opción múltiple', cls: 'tile-game' },
+  { key: 'entrevistas', icon: '🎤', title: 'Entrevistas', desc: `${QUESTIONS.length} preguntas técnicas`, cls: 'tile-int' },
+  { key: 'glosario', icon: '📖', title: 'Glosario', desc: `${TERMS.length} términos EN ↔ ES`, cls: 'tile-gloss' },
+  { key: 'fallas', icon: '🔧', title: 'Fallas', desc: `${FAULTS.length} casos de diagnóstico`, cls: 'tile-fault' },
+  { key: 'guia', icon: '🧭', title: 'Guía visual', desc: `${DIAGRAMS.length} diagramas: DP, voltajes, radar…`, cls: 'tile-guide' },
 ];
 
 const root = document.getElementById('app');
 let cleanup = null;
 
-function viewHome() {
+async function viewHome() {
   setHeader('ETO Toolkit', null);
+  const game = await getGame();
+  const next = nextLesson(game);
   root.replaceChildren(
-    h('p', { class: 'muted center' }, 'Herramientas para el Electro-Technical Officer offshore'),
-    h('nav', { class: 'menu' },
+    statsBar(game),
+    h('a', { class: 'hero', href: next ? `#/juego/leccion/${next.id}` : '#/juego/leccion/mix' },
+      h('span', { class: 'hero-bolt', 'aria-hidden': 'true' }, '⚡'),
+      h('span', { class: 'hero-text' },
+        h('small', {}, next ? 'Siguiente lección' : 'Repaso mixto'),
+        h('strong', {}, next ? next.title : '¡Completaste el camino!'),
+      ),
+      h('span', { class: 'hero-go' }, '▶'),
+    ),
+    dailyGoal(game),
+    h('nav', { class: 'tiles' },
       ...MODULES.map((m) =>
-        h('a', { class: `menu-btn ${m.ready ? '' : 'soon'}`, href: `#/${m.key}` },
-          h('span', { class: 'menu-icon', 'aria-hidden': 'true' }, m.icon),
-          h('span', { class: 'menu-text' },
-            h('strong', {}, m.title),
-            h('small', {}, m.ready ? m.desc : `${m.desc} · Próximamente`),
-          ),
+        h('a', { class: `tile ${m.cls}`, href: `#/${m.key}` },
+          h('span', { class: 'tile-icon', 'aria-hidden': 'true' }, m.icon),
+          h('strong', {}, m.title),
+          h('small', {}, m.desc),
         )
       ),
     ),
     h('a', { class: 'btn btn-ghost', href: '#/respaldo' }, '💾 Respaldo de datos'),
     h('p', { class: 'muted center small' }, `v${APP_VERSION} · Los datos se guardan solo en este dispositivo.`),
-  );
-}
-
-function viewSoon(mod) {
-  setHeader(mod.title, '#/');
-  root.replaceChildren(
-    h('section', { class: 'card center' },
-      h('div', { class: 'soon-icon' }, mod.icon),
-      h('h2', {}, mod.title),
-      h('p', { class: 'muted' }, 'Este módulo llegará en una próxima fase.'),
-    ),
-    h('a', { class: 'btn btn-secondary', href: '#/' }, '← Volver al inicio'),
   );
 }
 
@@ -96,7 +102,7 @@ function viewBackup() {
   root.replaceChildren(
     h('section', { class: 'card' },
       h('h2', {}, 'Exportar'),
-      h('p', { class: 'muted' }, 'Guarda un archivo JSON con tus respuestas personalizadas, tu progreso del glosario, tus términos propios, ajustes e historial de práctica. Guárdalo en Archivos o iCloud.'),
+      h('p', { class: 'muted' }, 'Guarda un archivo JSON con tus respuestas personalizadas, tu progreso del juego y del glosario, tus términos y casos propios, ajustes e historial de práctica. Guárdalo en Archivos o iCloud.'),
       h('button', { class: 'btn btn-primary btn-xl', onclick: doExport }, '⬆️ Exportar respaldo'),
     ),
     h('section', { class: 'card' },
@@ -118,15 +124,14 @@ async function route() {
   const [mod, ...rest] = parts;
 
   try {
-    if (!mod) viewHome();
+    if (!mod) await viewHome();
     else if (mod === 'entrevistas') cleanup = await interviewsRoute(root, rest);
     else if (mod === 'glosario') cleanup = await glossaryRoute(root, rest);
+    else if (mod === 'juego') cleanup = await gameRoute(root, rest);
+    else if (mod === 'fallas') cleanup = await faultsRoute(root, rest);
+    else if (mod === 'guia') cleanup = await guideRoute(root, rest);
     else if (mod === 'respaldo') viewBackup();
-    else {
-      const m = MODULES.find((x) => x.key === mod);
-      if (m) viewSoon(m);
-      else { location.hash = '#/'; return; }
-    }
+    else { location.hash = '#/'; return; }
   } catch (e) {
     console.error(e);
     root.replaceChildren(h('p', { class: 'card' }, `Error: ${e.message}`));

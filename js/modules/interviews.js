@@ -51,7 +51,9 @@ async function viewList(root) {
   const list = h('div', { class: 'list' });
   const chips = h('div', { class: 'chips' });
 
+  const playBtn = h('a', { class: 'btn btn-secondary' }, '🎮 Jugar');
   const renderChips = () => {
+    playBtn.href = filter !== 'all' ? `#/juego/leccion/q-${filter}` : '#/juego';
     chips.replaceChildren(
       ...[['all', 'Todas'], ...Object.entries(CATEGORIES)].map(([key, label]) =>
         h('button', {
@@ -98,7 +100,10 @@ async function viewList(root) {
 
   const practiced = Object.keys(counts).length;
   root.replaceChildren(
-    h('a', { class: 'btn btn-primary btn-xl', href: '#/entrevistas/practica' }, '🎯 Modo práctica (2 min)'),
+    h('div', { class: 'btn-row' },
+      h('a', { class: 'btn btn-primary', href: '#/entrevistas/practica' }, '🎯 Práctica 2 min'),
+      playBtn,
+    ),
     h('p', { class: 'muted center small' }, `Has practicado ${practiced} de ${QUESTIONS.length} preguntas.`),
     searchInput,
     chips,
@@ -133,6 +138,11 @@ async function viewDetail(root, id) {
       ),
       h('a', { class: 'btn btn-ghost', href: `#/entrevistas/q/${q.id}/editar` }, '✏️ Editar mi respuesta'),
     ),
+    q.kp?.length ? h('section', { class: 'card' },
+      h('h2', { class: 'label' }, '🎯 Puntos clave que esperan escuchar'),
+      h('ul', { class: 'steps' }, ...q.kp.map((k) => h('li', {}, k))),
+      speakButton('Escuchar puntos clave', () => q.kp.join('. ')),
+    ) : null,
     h('div', { class: 'btn-row' },
       prev ? h('a', { class: 'btn btn-ghost', href: `#/entrevistas/q/${prev.id}` }, '← Anterior') : h('span'),
       next ? h('a', { class: 'btn btn-ghost', href: `#/entrevistas/q/${next.id}` }, 'Siguiente →') : h('span'),

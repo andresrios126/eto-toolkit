@@ -1,6 +1,6 @@
 // Service worker: guarda la app en caché para que funcione sin internet.
 // Al cambiar cualquier archivo, sube CACHE_VERSION para que los iPhones descarguen la nueva versión.
-const CACHE_VERSION = 'eto-toolkit-v1.1.0';
+const CACHE_VERSION = 'eto-toolkit-v2.0.0';
 
 const ASSETS = [
   './',
@@ -11,11 +11,19 @@ const ASSETS = [
   './js/db.js',
   './js/ui.js',
   './js/speech.js',
+  './js/game-state.js',
   './js/components.js',
   './js/modules/interviews.js',
   './js/modules/glossary.js',
+  './js/modules/game.js',
+  './js/modules/faults.js',
+  './js/modules/guide.js',
   './js/data/questions.js',
+  './js/data/questions-extra.js',
   './js/data/glossary.js',
+  './js/data/glossary-extra.js',
+  './js/data/faults.js',
+  './js/data/diagrams.js',
   './icons/icon-192.png',
   './icons/icon-512.png',
   './icons/icon-maskable-512.png',

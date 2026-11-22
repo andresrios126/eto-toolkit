@@ -1,5 +1,12 @@
 // Utilidades de interfaz compartidas.
 
+// replaceChildren convierte null/false en texto ("null"). Los ignoramos para poder usar
+// condiciones del tipo `cond ? elemento : null` al construir vistas.
+const nativeReplace = Element.prototype.replaceChildren;
+Element.prototype.replaceChildren = function (...nodes) {
+  return nativeReplace.apply(this, nodes.filter((n) => n != null && n !== false));
+};
+
 export function h(tag, attrs = {}, ...children) {
   const el = document.createElement(tag);
   for (const [k, v] of Object.entries(attrs || {})) {

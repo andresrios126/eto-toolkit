@@ -54,10 +54,11 @@ function shuffle(arr) {
 
 // ---------- Lista ----------
 
-async function viewList(root) {
+async function viewList(root, forcedFilter) {
   setHeader('Glosario', '#/');
   const terms = await loadTerms();
-  let filter = await getSetting('glossaryFilter', 'all');
+  if (forcedFilter) await setSetting('glossaryFilter', forcedFilter);
+  let filter = forcedFilter || (await getSetting('glossaryFilter', 'all'));
   let search = '';
 
   const known = terms.filter((t) => t.known).length;
@@ -72,7 +73,9 @@ async function viewList(root) {
     ...Object.entries(CATS),
   ];
 
+  const playBtn = h('a', { class: 'btn btn-secondary' }, '🎮 Jugar');
   const renderChips = () => {
+    playBtn.href = CATS[filter] && filter !== 'custom' ? `#/juego/leccion/g-${filter}` : '#/juego';
     chips.replaceChildren(
       ...filters.map(([key, label]) =>
         h('button', {
@@ -124,7 +127,10 @@ async function viewList(root) {
   renderList();
 
   root.replaceChildren(
-    h('a', { class: 'btn btn-primary btn-xl', href: '#/glosario/tarjetas' }, '🃏 Estudiar con tarjetas'),
+    h('div', { class: 'btn-row' },
+      h('a', { class: 'btn btn-primary', href: '#/glosario/tarjetas' }, '🃏 Tarjetas'),
+      playBtn,
+    ),
     h('div', { class: 'progress', 'aria-label': 'Progreso' },
       h('div', { class: 'progress-bar', style: `width:${(known / terms.length) * 100}%` }),
     ),
@@ -408,6 +414,7 @@ function runSession(root, cards, dir) {
 export async function glossaryRoute(root, parts) {
   // parts: [] | ['tarjetas'] | ['nuevo'] | ['t', id] | ['t', id, 'editar']
   if (parts[0] === 'tarjetas') return viewCards(root);
+  if (parts[0] === 'cat' && parts[1]) return viewList(root, parts[1]);
   if (parts[0] === 'nuevo') return viewEdit(root, null);
   if (parts[0] === 't' && parts[1] && parts[2] === 'editar') return viewEdit(root, parts[1]);
   if (parts[0] === 't' && parts[1]) return viewDetail(root, parts[1]);

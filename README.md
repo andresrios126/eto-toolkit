@@ -4,34 +4,43 @@ Aplicación web progresiva (PWA) en español para **Electro-Technical Officers**
 
 ## Módulos
 
-| Módulo | Estado |
+| Módulo | Qué tiene |
 |---|---|
-| 🎤 **Entrevistas**: entrenador de entrevistas en inglés | ✅ Fase 1 |
-| 📖 **Glosario**: términos técnicos EN ↔ ES con tarjetas | ✅ Fase 2 |
-| 📜 Certificados | Próximamente |
-| ⚡ Fallas | Próximamente |
+| 🎮 **Juego** | Lecciones de opción múltiple con XP, racha, meta diaria y niveles de voltaje |
+| 🎤 **Entrevistas** | 72 preguntas técnicas con respuesta modelo EN/ES, puntos clave, voz y práctica de 2 min |
+| 📖 **Glosario** | 268 términos técnicos EN ↔ ES con definición, ejemplo, voz y tarjetas |
+| 🔧 **Fallas** | 21 casos de troubleshooting + tus propios casos |
+| 🧭 **Guía visual** | 15 diagramas de referencia: DP, redundancia, voltajes, VFD, thrusters, radar, LOTO… |
+
+### 🎮 Juego (estilo app de idiomas, con tema eléctrico)
+- Un **camino de lecciones** en 3 unidades: vocabulario técnico (una lección por categoría del glosario), entrevista técnica (una por categoría de preguntas) y diagnóstico de fallas.
+- Tipos de pregunta: término → significado, español → inglés, definición → término, completar la frase, pregunta en español → pregunta en inglés, punto clave de la respuesta, completar la respuesta modelo, causa posible de una falla y comprensión de historias en inglés.
+- **3 fusibles** (vidas) por lección; las falladas vuelven a salir al final.
+- **10 XP** por acierto, combo y bonus por lección perfecta; **estrellas** por lección, **racha** de días y **meta diaria** de 50 XP.
+- **Niveles con nombre de voltaje**: 24 V → 110 V → 230 V → 440 V → 690 V → 3.3 kV → 6.6 kV → 11 kV → 33 kV → 132 kV.
+- **Repaso mixto** y **"Lo que no sé"** (términos que aún no marcaste como aprendidos).
+- Sonidos de acierto/error (se pueden silenciar).
 
 ### 🎤 Entrenador de entrevistas
-- **30 preguntas** típicas de entrevista para ETO: DP system, bow thruster, generadores, switchboard, PMS, seguridad eléctrica, LOTO y experiencia personal.
-- Cada pregunta tiene una **respuesta modelo en inglés sencillo** y su **traducción al español**.
-- **🔊 Escuchar** la pregunta, la respuesta o ambas, con voz en inglés y velocidad **Lento / Normal**.
-- **🎯 Modo práctica**: pregunta al azar y **temporizador de 2 minutos** para responder en voz alta. Suena una alarma al terminar y después puedes ver la respuesta modelo.
-- **✏️ Editar respuestas** para personalizarlas con tu experiencia real (y restaurar la original cuando quieras).
-- Buscador, filtro por categoría y contador de preguntas practicadas.
-
-> Consejo: empieza editando **"Tell me about yourself"** y **"Tell me about a difficult fault"**. Tienen espacios como `[your name]` para completar con tus datos.
+- **72 preguntas** en 14 categorías: DP (CAM/TAM, capability plot, consequence analysis, trials, alertas, UPS, drift-off/drive-off), thrusters, generadores, switchboard, PMS, seguridad eléctrica, LOTO, alto voltaje, propulsión diésel-eléctrica, automatización y sensores, navegación y radares, baterías e híbridos, situacionales y experiencia personal.
+- Cada pregunta tiene **respuesta modelo en inglés sencillo**, **traducción** y **3 puntos clave** que el entrevistador espera escuchar.
+- **🔊 Voz** lenta / normal, **🎯 modo práctica** con temporizador de 2 minutos y **✏️ edición** de respuestas.
 
 ### 📖 Glosario
-- **159 términos técnicos** en 10 categorías: conceptos eléctricos, generación, distribución y protección, motores y variadores, DP y propulsión, automatización, seguridad, herramientas, navegación y comunicaciones, y buque y operaciones offshore.
-- Cada término tiene su **traducción al español**, una **definición en inglés sencillo** y un **ejemplo de uso** como los que se dicen a bordo.
-- **🔊 Escuchar** el término, la definición o el ejemplo, en velocidad lenta o normal.
-- **Buscador** en inglés o español (no importan los acentos) y filtro por categoría.
-- **⭐ Favoritos** y **✅ Lo sé**, con una barra de progreso.
-- **🃏 Tarjetas de estudio (flashcards)**: eliges el grupo (por aprender, favoritos, una categoría o todos), la dirección (inglés → español o español → inglés) y la cantidad. Las que marcas **Repasar** vuelven a salir al final, y al terminar puedes repasar solo las que fallaste.
-- **➕ Tus propios términos**: agrega palabras nuevas que escuches a bordo. También puedes **editar** los términos incluidos y restaurar el original.
+- **268 términos** en 16 categorías: conceptos eléctricos, generación, distribución y protección, motores y variadores, DP y propulsión, **terminología DP**, automatización, **sensores**, seguridad, herramientas, navegación, **radares**, **tipos de buques**, **propulsores**, **tipos de voltaje** y buque y operaciones.
+- Definición y ejemplo en inglés, voz, búsqueda sin acentos, favoritos, "lo sé", **tarjetas** y **términos propios**.
+
+### 🔧 Fallas
+- **21 casos** de generadores, cuadros, motores, thrusters/VFD, DP, automatización, navegación, baterías/UPS y cubierta.
+- Cada caso: síntoma, causas posibles, pasos de diagnóstico, solución y **cómo contarlo en inglés en la entrevista** (con voz y traducción).
+- **➕ Mis casos**: agrega las fallas que tú resolviste; también aparecen en el juego.
+
+### 🧭 Guía visual
+Diagramas dibujados en la app (funcionan sin internet): visión general DP, redundancia DP2 con cuadro dividido, clases DP, referencias de posición, niveles de alerta, diagrama unifilar, tipos de voltaje, estrella/triángulo, sincronización, VFD, tipos de propulsores, lazo 4-20 mA, radar, LOTO y tabla de sensores. Cada uno con explicación en español y términos clave para escuchar en inglés.
 
 ### 💾 Datos y respaldo
 - Todo se guarda **solo en tu dispositivo** (IndexedDB). No hay servidor ni cuenta.
+- El respaldo incluye respuestas editadas, progreso del juego y del glosario, términos y casos propios.
 - En **Inicio → Respaldo de datos** puedes **exportar** un archivo `.json` (en el iPhone se abre el menú Compartir: elige *Guardar en Archivos* o iCloud Drive) e **importarlo** después.
 - ⚠️ Si borras la app de la pantalla de inicio o los datos de Safari, se pierde lo guardado. **Exporta un respaldo de vez en cuando.**
 
@@ -85,10 +94,16 @@ js/db.js                IndexedDB + exportar/importar JSON
 js/speech.js            speechSynthesis (voz y velocidad)
 js/ui.js                Utilidades de interfaz
 js/components.js        Componentes compartidos (voz, velocidad)
-js/modules/interviews.js  Módulo 1: entrevistas
-js/modules/glossary.js  Módulo 2: glosario y tarjetas
-js/data/questions.js    Las 30 preguntas y respuestas modelo
-js/data/glossary.js     Los términos del glosario
+js/game-state.js        XP, racha, meta diaria y niveles
+js/modules/game.js      Juego de opción múltiple
+js/modules/interviews.js  Entrevistas
+js/modules/glossary.js  Glosario y tarjetas
+js/modules/faults.js    Casos de fallas
+js/modules/guide.js     Guía visual
+js/data/questions*.js   Preguntas, respuestas modelo y puntos clave
+js/data/glossary*.js    Términos del glosario
+js/data/faults.js       Casos de fallas
+js/data/diagrams.js     Diagramas SVG
 icons/                  Íconos de la app
 ```
 

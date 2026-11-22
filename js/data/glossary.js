@@ -2,6 +2,8 @@
 // Formato compacto por categoría: [inglés, español, definición en inglés sencillo, ejemplo en inglés].
 // Los cambios del usuario (favoritos, "lo sé", ediciones y términos propios) se guardan en IndexedDB.
 
+import { EXTRA_GLOSSARY_CATEGORIES, RAW_EXTRA } from './glossary-extra.js';
+
 export const GLOSSARY_CATEGORIES = {
   basic: 'Conceptos eléctricos',
   gen: 'Generación',
@@ -13,6 +15,7 @@ export const GLOSSARY_CATEGORIES = {
   tools: 'Herramientas y medición',
   nav: 'Navegación y comunicaciones',
   vessel: 'Buque y operaciones',
+  ...EXTRA_GLOSSARY_CATEGORIES,
   custom: 'Mis términos',
 };
 
@@ -202,6 +205,6 @@ function slug(s) {
   return s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 }
 
-export const TERMS = Object.entries(RAW).flatMap(([cat, rows]) =>
+export const TERMS = Object.entries({ ...RAW, ...RAW_EXTRA }).flatMap(([cat, rows]) =>
   rows.map(([en, es, def, ex]) => ({ id: `g-${cat}-${slug(en)}`, cat, en, es, def, ex, builtin: true }))
 );

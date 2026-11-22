@@ -2,6 +2,8 @@
 // Cada pregunta tiene: id, categoría, pregunta (en/es) y respuesta modelo (en/es).
 // Las respuestas editadas por el usuario se guardan en IndexedDB y NO modifican este archivo.
 
+import { EXTRA_CATEGORIES, EXTRA_QUESTIONS, KP_BASE } from './questions-extra.js';
+
 export const CATEGORIES = {
   dp: 'DP System',
   thruster: 'Bow Thruster / Propulsión',
@@ -11,9 +13,10 @@ export const CATEGORIES = {
   safety: 'Seguridad eléctrica',
   loto: 'LOTO',
   personal: 'Experiencia personal',
+  ...EXTRA_CATEGORIES,
 };
 
-export const QUESTIONS = [
+const BASE_QUESTIONS = [
   // ---------- DP SYSTEM ----------
   {
     id: 'dp-01',
@@ -270,3 +273,11 @@ export const QUESTIONS = [
     aEs: 'Su empresa tiene una flota offshore moderna y muy buena reputación en seguridad. Quiero crecer en mi carrera con buques DP avanzados y nueva tecnología, como sistemas híbridos y de baterías. Soy una persona confiable y trabajadora, aprendo rápido y me gusta trabajar en equipo. Creo que puedo aportar mi experiencia práctica y ayudar a mantener sus buques seguros y en operación.',
   },
 ];
+
+// Orden: base + adicionales, agrupadas por categoría en el orden de CATEGORIES.
+const ALL = [...BASE_QUESTIONS.map((q) => ({ ...q, kp: KP_BASE[q.id] || [] })), ...EXTRA_QUESTIONS];
+const ORDER = Object.keys(CATEGORIES);
+export const QUESTIONS = ALL
+  .map((q, i) => ({ q, i }))
+  .sort((a, b) => ORDER.indexOf(a.q.cat) - ORDER.indexOf(b.q.cat) || a.i - b.i)
+  .map(({ q }) => q);

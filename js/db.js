@@ -4,10 +4,11 @@
 //   settings -> preferencias { key, value }
 //   log      -> historial de práctica { id(auto), qid, date, seconds }
 //   glossary -> estado/ediciones de términos y términos propios { id, fav, known, edited, custom, en, es, def, ex, cat }
+//   faults   -> casos de fallas propios { id, titleEn, titleEs, symptom, causes[], steps[], fix, explainEn, explainEs }
 
 const DB_NAME = 'eto-toolkit';
-const DB_VERSION = 2;
-export const STORES = ['answers', 'settings', 'log', 'glossary'];
+const DB_VERSION = 3;
+export const STORES = ['answers', 'settings', 'log', 'glossary', 'faults'];
 
 let dbPromise = null;
 
@@ -21,6 +22,7 @@ function openDB() {
       if (!db.objectStoreNames.contains('settings')) db.createObjectStore('settings', { keyPath: 'key' });
       if (!db.objectStoreNames.contains('log')) db.createObjectStore('log', { keyPath: 'id', autoIncrement: true });
       if (!db.objectStoreNames.contains('glossary')) db.createObjectStore('glossary', { keyPath: 'id' });
+      if (!db.objectStoreNames.contains('faults')) db.createObjectStore('faults', { keyPath: 'id' });
     };
     req.onsuccess = () => {
       const conn = req.result;
