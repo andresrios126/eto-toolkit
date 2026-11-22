@@ -430,9 +430,9 @@ export function statsBar(game) {
       h('span', { class: 'stat-label' }, label),
     );
   return h('div', { class: 'stats-bar' },
-    stat(game.streak ? 'fire' : '', '🔥', game.streak, 'Días seguidos',
+    stat(game.streak ? 'fire' : '', '🔥', game.streak, 'Racha',
       '🔥 Racha: días seguidos con al menos una lección. Si un día no practicas, vuelve a 0.'),
-    stat('xp', '⚡', game.xp, 'Puntos XP',
+    stat('xp', '⚡', game.xp, 'XP',
       '⚡ XP: puntos ganados. 10 por acierto, 5 con pista. Meta diaria: 50 XP.'),
     stat('lvlbadge', '', lvl.name, 'Nivel',
       lvl.nextName ? `Nivel ${lvl.name}: sube con tus XP. Te faltan ${lvl.toNext} XP para ${lvl.nextName}.` : `Nivel máximo: ${lvl.name}.`),
