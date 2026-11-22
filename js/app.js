@@ -1,6 +1,6 @@
 // Punto de entrada: router por hash, menú de inicio, respaldo y registro del service worker.
 
-import { exportBackup, importBackup, requestPersistence, getSetting, setSetting } from './db.js';
+import { db, exportBackup, importBackup, requestPersistence, getSetting, setSetting } from './db.js';
 import { rateControl } from './components.js';
 import { initLookup } from './lookup.js';
 import { initCloud, cloudConfigured, getSession, getStatus, signIn, signUp, signOut, syncNow } from './cloud.js';
@@ -21,7 +21,7 @@ import { TERMS } from './data/glossary.js';
 import { FAULTS } from './data/faults.js';
 import { DIAGRAMS } from './data/diagrams.js';
 
-const APP_VERSION = '3.4.1';
+const APP_VERSION = '3.5.0';
 
 const MODULES = [
   { key: 'juego', icon: '🎮', title: 'Juego', desc: 'Opción múltiple y escritura', cls: 'tile-game' },
@@ -371,6 +371,8 @@ async function start() {
   requestPersistence();
   initLookup();
   initCloud();
+  // La sección 'Mis imágenes' se retiró: liberar el espacio de imágenes guardadas antes.
+  db.clear('images').catch(() => {});
   // Si la sincronización trajo avance de otro dispositivo, refrescar pantallas de resumen.
   window.addEventListener('eto-cloud-updated', () => {
     if (/^(#\/?)?$|^#\/(ajustes|juego|ingles)$/.test(location.hash)) route();

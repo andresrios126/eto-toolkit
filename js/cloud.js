@@ -213,6 +213,7 @@ function mergeSettings(local = [], remote = []) {
     if (!(k in L) || !(k in R)) continue;
     if (k === 'game') out[k] = mergeGame(L[k], R[k]);
     else if (k === 'english') out[k] = mergeEnglish(L[k], R[k]);
+    else if (k === 'kposCourse') out[k] = { units: { ...(R[k].units || {}), ...(L[k].units || {}) }, best: Math.max(R[k].best || 0, L[k].best || 0) };
     else if (k === 'mockHistory') {
       const m = new Map([...(R[k] || []), ...(L[k] || [])].map((h) => [h.date, h]));
       out[k] = [...m.values()].sort((x, y) => (x.date < y.date ? 1 : -1)).slice(0, 20);

@@ -47,7 +47,7 @@ service cloud.firestore {
 ## Material de cursos con derechos (por ejemplo, Kongsberg)
 - El repositorio y la app son **públicos**: no subir diapositivas, imágenes ni texto copiado de material propietario.
 - El contenido se escribe con palabras propias y los diagramas se dibujan desde cero.
-- Las imágenes originales se agregan en la app en **Guía visual → 📷 Mis imágenes**, que se guardan solo en el dispositivo.
+- La sección de imágenes privadas se retiró (v3.5.0): el contenido de cursos se representa con resúmenes y diagramas propios.
 
 ## Tus datos personales (progreso, respuestas editadas)
 - No están en GitHub: viven solo en tu iPhone.
@@ -61,6 +61,7 @@ service cloud.firestore {
 | Casos de fallas | `js/data/faults.js` |
 | Diagramas | `js/data/diagrams.js` y `js/data/diagrams-kpos.js` |
 | Preguntas K-Pos | `js/data/questions-kpos.js` |
+| Curso K-Pos (unidades y evaluación) | `js/data/kpos-course.js` |
 | Temas de gramática, ejercicios y verbos de inglés | `js/data/english.js` |
 | Palabras del diccionario del globo | `js/data/dictionary.js` |
 | Temas de color | `js/themes.js` |

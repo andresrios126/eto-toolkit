@@ -9,7 +9,7 @@
 
 const DB_NAME = 'eto-toolkit';
 const DB_VERSION = 4;
-export const STORES = ['answers', 'settings', 'log', 'glossary', 'faults', 'images'];
+export const STORES = ['answers', 'settings', 'log', 'glossary', 'faults'];
 
 let dbPromise = null;
 

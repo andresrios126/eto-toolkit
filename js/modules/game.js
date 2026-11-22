@@ -550,7 +550,8 @@ export async function runLesson(root, opts) {
 
   const queue = questions.map((q) => ({ q, retry: false }));
   const total = questions.length;
-  let lives = LIVES;
+  // opts.noLives: evaluación completa sin vidas (se responden todas las preguntas).
+  let lives = opts.noLives ? Infinity : LIVES;
   let answered = 0;
   let correct = 0;
   let firstTry = 0;
@@ -566,7 +567,7 @@ export async function runLesson(root, opts) {
     header.replaceChildren(
       h('a', { class: 'x-btn', href: opts.backHash, 'aria-label': 'Salir' }, '✕'),
       h('div', { class: 'progress grow' }, h('div', { class: 'progress-bar volt', style: `width:${(answered / total) * 100}%` })),
-      h('span', { class: 'fuses', 'aria-label': `${lives} ${F.lifeName}` },
+      opts.noLives ? h('span', { class: 'muted small' }, `${answered}/${total}`) : h('span', { class: 'fuses', 'aria-label': `${lives} ${F.lifeName}` },
         ...Array.from({ length: LIVES }, (_, i) => h('span', { class: `${F.lifeClass} ${i < lives ? '' : 'blown'}` }, F.life))),
     );
   };
@@ -740,7 +741,7 @@ export async function runLesson(root, opts) {
         combo = 0;
         lives--;
         if (!retry) answered++;
-        if (!retry) queue.push({ q, retry: true });
+        if (!retry && !opts.noLives) queue.push({ q, retry: true });
         sfx('bad');
       }
       paintHeader();

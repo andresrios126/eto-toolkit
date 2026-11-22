@@ -8,11 +8,11 @@ Aplicación web progresiva (PWA) en español para **Electro-Technical Officers**
 |---|---|
 | 🎮 **Juego** | Opción múltiple, escribir y completar palabras, ordenar letras y dictado, con XP, racha y niveles de voltaje |
 | 🎙️ **Simulacro** | Entrevista completa: el entrevistador lee las preguntas en voz alta, respondes con tiempo y (opcional) te grabas |
-| 🎤 **Entrevistas** | 110 preguntas técnicas (incluye K-Pos), incluidas las de mis equipos y sistemas con respuesta modelo EN/ES, puntos clave, voz y práctica de 2 min |
-| 📖 **Glosario** | 345 términos técnicos EN ↔ ES con definición, ejemplo, voz y tarjetas |
+| 🎤 **Entrevistas** | 117 preguntas técnicas (incluye K-Pos), incluidas las de mis equipos y sistemas con respuesta modelo EN/ES, puntos clave, voz y práctica de 2 min |
+| 📖 **Glosario** | 359 términos técnicos EN ↔ ES con definición, ejemplo, voz y tarjetas |
 | 🔧 **Fallas** | 21 casos de troubleshooting + tus propios casos |
 | 🇬🇧 **Inglés** | Sub-app independiente: 17 temas de gramática (12 tiempos verbales, going to, used to, modales, voz pasiva, condicionales) y 89 verbos irregulares |
-| 🧭 **Guía visual** | 22 diagramas (incluye K-Pos) + 📷 Mis imágenes privadas · de referencia: DP, redundancia, voltajes, VFD, thrusters, radar, LOTO… |
+| 🧭 **Guía visual** | 32 diagramas propios + 📚 Curso K-Pos con evaluación |
 
 ### 🎮 Juego (estilo app de idiomas, con tema eléctrico)
 - Un **camino de lecciones** en 4 unidades: vocabulario técnico (una lección por categoría del glosario), **escribe y completa**, entrevista técnica (una por categoría de preguntas) y diagnóstico de fallas.
@@ -62,7 +62,7 @@ Aplicación web progresiva (PWA) en español para **Electro-Technical Officers**
 - **➕ Mis casos**: agrega las fallas que tú resolviste; también aparecen en el juego.
 
 ### 🧭 Guía visual
-- **📷 Mis imágenes (privadas)**: agrega fotos o capturas propias (por ejemplo, diapositivas de tus cursos). Se guardan solo en tu dispositivo y en tu respaldo; nunca se suben a GitHub ni a la web. También aparecen en las preguntas y diagramas de DP. Zoom con dos dedos. Con **📦 Importar paquete** se agregan muchas imágenes a la vez (con título y vínculo a su tema) sin borrar nada.
+- **📚 Curso K-Pos**: 9 unidades con resumen, diagramas y preguntas, y una evaluación final de 20 preguntas.
 Diagramas dibujados en la app (funcionan sin internet): visión general DP, redundancia DP2 con cuadro dividido, clases DP, referencias de posición, niveles de alerta, diagrama unifilar, tipos de voltaje, estrella/triángulo, sincronización, VFD, tipos de propulsores, lazo 4-20 mA, radar, LOTO y tabla de sensores. Cada uno con explicación en español y términos clave para escuchar en inglés.
 
 ### 👤 Cuenta y sincronización

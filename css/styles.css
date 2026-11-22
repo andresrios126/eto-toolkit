@@ -730,4 +730,8 @@ select.input { appearance: auto; }
 .segmented.full button { flex: 1; min-width: 0; }
 .home-account { display: block; text-decoration: none; }
 
+.course-hero { background: linear-gradient(135deg, #2b8de0, #1b5fae); color: #fff; box-shadow: 0 5px 0 #144a87; }
+.course-hero .hero-text small { opacity: .85; }
+.course-hero .hero-go { background: #fff; color: #1b5fae; }
+
 [hidden] { display: none !important; }

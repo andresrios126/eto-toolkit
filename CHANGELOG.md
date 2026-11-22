@@ -1,5 +1,11 @@
 # Historial de cambios
 
+## v3.5.0 — Curso K-Pos y más diagramas propios
+- **📚 Curso K-Pos** (Guía visual): 9 unidades como un curso de mantenimiento (qué es DP, modos y HMI, sensores y referencias, estación de operador, gabinete DP, red, serial, joystick independiente, respaldo y fallas), cada una con resumen, diagramas y preguntas, y una **evaluación final de 20 preguntas** sin vidas.
+- **10 diagramas nuevos** dibujados desde cero (32 en total): ciclo DP, fuerzas, configuraciones K-Pos, conexión de MRU, DGNSS y correcciones, trama serial, sentencia NMEA de GPS, direcciones IP en red doble, traspaso de mando del joystick y ciclo de vida.
+- **7 preguntas** nuevas de K-Pos (117 en total) y **14 términos** (359 en total).
+- Se retiró **Mis imágenes**: el contenido del curso se representa con resúmenes y diagramas propios, sin imágenes de terceros.
+
 ## v3.4.1 — Firebase conectado
 - Proyecto de Firebase `eto-toolkit` conectado: Authentication (correo/contraseña interno), Firestore `(default)` en nam5 con reglas por usuario.
 - La sección ⚙️ → 👤 Cuenta ya permite crear cuenta e iniciar sesión.

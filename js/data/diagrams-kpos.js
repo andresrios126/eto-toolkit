@@ -184,3 +184,219 @@ export const KPOS_DIAGRAMS = [
     terms: [['talker ID', 'identificador de emisor'], ['sentence type', 'tipo de sentencia'], ['checksum', 'suma de verificación'], ['baud rate', 'velocidad en baudios'], ['differential', 'diferencial']],
   },
 ];
+
+// ---------- Más diagramas propios (curso K-Pos) ----------
+const ar = (id) => `<defs><marker id="${id}" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="mk"/></marker></defs>`;
+const bx = (x, y, w, hh, label, sub = '', cls = 'box') =>
+  `<rect x="${x}" y="${y}" width="${w}" height="${hh}" rx="8" class="${cls}"/>` +
+  `<text x="${x + w / 2}" y="${y + hh / 2 + (sub ? -2 : 4)}" text-anchor="middle">${label}</text>` +
+  (sub ? `<text x="${x + w / 2}" y="${y + hh / 2 + 12}" text-anchor="middle" class="sm muted">${sub}</text>` : '');
+
+KPOS_DIAGRAMS.push(
+  {
+    id: 'dp-loop',
+    title: 'El ciclo DP: medir, evaluar, actuar',
+    titleEn: 'Sense, assess, respond',
+    svg: `<svg viewBox="0 0 360 220" class="dg" role="img" aria-label="DP loop">${ar('m1')}
+      ${bx(130, 10, 100, 44, 'SENSE', 'sensors + references', 'box hl')}
+      ${bx(250, 120, 100, 44, 'ASSESS', 'model + controller', 'box pw')}
+      ${bx(10, 120, 100, 44, 'RESPOND', 'thrusters')}
+      <path d="M230 40 Q300 50 300 116" class="sig" marker-end="url(#m1)"/>
+      <path d="M248 150 H114" class="sig" marker-end="url(#m1)"/>
+      <path d="M60 118 Q60 50 128 36" class="sig" marker-end="url(#m1)"/>
+      <text x="180" y="100" text-anchor="middle" class="sm muted">wind · waves · current</text>
+      <text x="180" y="114" text-anchor="middle" class="sm muted">push the vessel off position</text>
+      <text x="180" y="200" text-anchor="middle" class="sm">The loop repeats many times per second</text>
+    </svg>`,
+    explain: [
+      'El DP funciona como un ser vivo que mantiene el equilibrio: <b>mide</b> (sensores y referencias), <b>evalúa</b> (modelo y controlador calculan el error y el empuje necesario) y <b>actúa</b> (propulsores).',
+      'El ciclo se repite continuamente para compensar viento, olas y corriente.',
+    ],
+    terms: [['sense', 'medir / percibir'], ['assess', 'evaluar'], ['respond', 'responder / actuar']],
+  },
+  {
+    id: 'dp-forces',
+    title: 'Fuerzas sobre el buque',
+    titleEn: 'Environmental and thruster forces',
+    svg: `<svg viewBox="0 0 360 230" class="dg" role="img" aria-label="Forces">${ar('m2')}
+      <path d="M180 40 L210 75 L210 180 L150 180 L150 75 Z" class="box hl"/>
+      <text x="180" y="130" text-anchor="middle" class="sm">vessel</text>
+      <path d="M40 60 L140 90" class="sig" marker-end="url(#m2)"/><text x="20" y="54" class="sm acc">WIND</text>
+      <path d="M40 200 L140 165" class="sig" marker-end="url(#m2)"/><text x="16" y="216" class="sm acc">CURRENT</text>
+      <path d="M40 130 L140 128" class="sig" marker-end="url(#m2)"/><text x="10" y="124" class="sm acc">WAVES</text>
+      <path d="M210 90 H280" class="wire" marker-end="url(#m2)"/><text x="240" y="84" class="sm">bow tunnel</text>
+      <path d="M210 170 H280" class="wire" marker-end="url(#m2)"/><text x="240" y="164" class="sm">azimuths</text>
+      <path d="M180 180 V214" class="wire" marker-end="url(#m2)"/><text x="190" y="214" class="sm">props / rudders</text>
+      <text x="290" y="40" class="sm muted">Result:</text>
+      <text x="290" y="54" class="sm muted">surge, sway</text>
+      <text x="290" y="68" class="sm muted">and yaw</text>
+    </svg>`,
+    explain: [
+      'Las <b>fuerzas ambientales</b> (viento, olas, corriente) empujan el buque. Los <b>propulsores</b> (azimutales, túneles, hélices y timones) generan la fuerza contraria.',
+      'El resultado se expresa en los tres movimientos que controla el DP: <b>surge, sway y yaw</b>.',
+      'El viento se mide directamente (alimentación anticipada o <i>feed-forward</i>); olas y corriente se estiman con el modelo.',
+    ],
+    terms: [['environmental forces', 'fuerzas ambientales'], ['feed-forward', 'compensación anticipada'], ['thrust', 'empuje']],
+  },
+  {
+    id: 'kpos-configs',
+    title: 'Configuraciones K-Pos (esquema)',
+    titleEn: 'K-Pos configurations',
+    svg: `<svg viewBox="0 0 360 260" class="dg" role="img" aria-label="Configurations">
+      ${[
+        ['DP-11', 'class 1', 10, 10, 1, false],
+        ['DP-21', 'class 2', 185, 10, 2, false],
+        ['DP-31', 'class 2', 10, 135, 3, false],
+        ['DP-21 + DP-11', 'class 3', 185, 135, 2, true],
+      ].map(([n, c, x, y, k, backup]) => `<rect x="${x}" y="${y}" width="165" height="115" rx="10" class="zone"/>
+        <text x="${x + 8}" y="${y + 16}" class="acc">${n}</text><text x="${x + 157}" y="${y + 16}" text-anchor="end" class="sm muted">${c}</text>
+        ${Array.from({ length: k }, (_, i) => `<rect x="${x + 12 + i * 34}" y="${y + 28}" width="28" height="22" rx="4" class="box"/><text x="${x + 26 + i * 34}" y="${y + 43}" text-anchor="middle" class="sm">OS</text>`).join('')}
+        <path d="M${x + 10} ${y + 62} H${x + (backup ? 100 : 155)}" class="wire"/>
+        ${k > 1 ? `<path d="M${x + 10} ${y + 68} H${x + (backup ? 100 : 155)}" class="sig"/>` : ''}
+        ${Array.from({ length: k }, (_, i) => `<rect x="${x + 12 + i * 34}" y="${y + 78}" width="28" height="26" rx="4" class="box pw"/><text x="${x + 26 + i * 34}" y="${y + 95}" text-anchor="middle" class="sm">C${i + 1}</text>`).join('')}
+        ${backup ? `<rect x="${x + 108}" y="${y + 26}" width="50" height="80" rx="6" class="box hl"/><text x="${x + 133}" y="${y + 60}" text-anchor="middle" class="sm">backup</text><text x="${x + 133}" y="${y + 74}" text-anchor="middle" class="sm muted">other room</text>` : ''}`).join('')}
+      <text x="180" y="256" text-anchor="middle" class="sm muted">OS = operator station · C = controller · lines = network A / B</text>
+    </svg>`,
+    explain: [
+      '<b>DP-11:</b> una estación y un controlador. <b>DP-21:</b> dos controladores y red doble. <b>DP-31:</b> tres controladores (sigue siendo clase 2).',
+      '<b>Clase 3:</b> sistema principal redundante + <b>sistema de respaldo</b> con su propia estación y controlador, en otro compartimento protegido contra incendio e inundación.',
+    ],
+    terms: [['backup system', 'sistema de respaldo'], ['controller', 'controlador'], ['compartment', 'compartimento']],
+  },
+  {
+    id: 'mru-wiring',
+    title: 'Conexión de una MRU al DP',
+    titleEn: 'MRU interface example',
+    svg: `<svg viewBox="0 0 360 230" class="dg" role="img" aria-label="MRU wiring">${ar('m3')}
+      ${bx(10, 80, 70, 60, 'MRU', 'sensor')}
+      ${bx(110, 70, 80, 80, 'Junction', 'box')}
+      ${bx(282, 60, 70, 100, 'DP', 'cabinet', 'box hl')}
+      <path d="M80 110 H108" class="wire"/>
+      ${[['±10 V roll', 78], ['±10 V pitch', 96], ['±10 V heave', 114], ['ready (digital)', 132]].map(([t, y]) => `<path d="M190 ${y} H278" class="sig" marker-end="url(#m3)"/><text x="196" y="${y - 3}" class="sm">${t}</text>`).join('')}
+      <path d="M282 150 H192" class="wire" marker-end="url(#m3)"/><text x="200" y="166" class="sm muted">24 V DC power</text>
+      <path d="M150 70 V30 H300" class="sig" marker-end="url(#m3)"/><text x="160" y="24" class="sm">serial data → HPR system</text>
+      <text x="180" y="210" text-anchor="middle" class="sm muted">Example: check each channel with a multimeter and a simulated signal</text>
+    </svg>`,
+    explain: [
+      'La MRU envía balance, cabeceo y arfada como <b>señales analógicas</b> (por ejemplo ±10 V) y una <b>señal digital de listo</b>. También puede enviar datos seriales al sistema acústico (HPR), que los necesita para corregir el movimiento del transductor.',
+      'Búsqueda de fallas: medir voltaje en cada canal, comparar con el valor mostrado en el DP y revisar la alimentación de 24 V DC.',
+    ],
+    terms: [['analog signal', 'señal analógica'], ['junction box', 'caja de conexiones'], ['ready signal', 'señal de listo']],
+  },
+  {
+    id: 'dgnss-corr',
+    title: 'DGNSS y correcciones diferenciales',
+    titleEn: 'DGNSS and differential corrections',
+    svg: `<svg viewBox="0 0 360 220" class="dg" role="img" aria-label="DGNSS">${ar('m4')}
+      ${[30, 90, 150].map((x) => `<circle cx="${x}" cy="22" r="9" class="box"/><path d="M${x - 14} 22 H${x + 14}" class="wire" stroke-width="1.5"/>`).join('')}
+      <text x="10" y="50" class="sm">GPS / GLONASS satellites</text>
+      <path d="M90 32 L150 110" class="sig" marker-end="url(#m4)"/>
+      ${bx(250, 10, 100, 34, 'Correction', 'satellite service')}
+      ${bx(250, 54, 100, 34, 'IALA beacon', 'coast radio')}
+      ${bx(250, 98, 100, 34, 'Network', 'internet / VSAT')}
+      <path d="M250 27 L200 112 M250 71 L200 118 M250 115 L200 124" class="sig"/>
+      ${bx(110, 110, 90, 44, 'DGNSS', 'receiver', 'box hl')}
+      <path d="M155 154 V186" class="wire" marker-end="url(#m4)"/>
+      ${bx(110, 188, 90, 28, 'DP', '')}
+      <text x="208" y="176" class="sm muted">RS-422 NMEA</text>
+    </svg>`,
+    explain: [
+      'El receptor calcula la posición con los satélites. Las <b>correcciones diferenciales</b> eliminan gran parte del error y pueden llegar por <b>servicio satelital</b>, <b>radiobaliza IALA</b> costera o <b>red</b>.',
+      'Fallas típicas: antena tapada (grúa, plataforma), cable o conector con agua, suscripción de corrección vencida, o baudios incorrectos hacia el DP.',
+    ],
+    terms: [['differential correction', 'corrección diferencial'], ['IALA beacon', 'radiobaliza IALA'], ['receiver', 'receptor']],
+  },
+  {
+    id: 'serial-frame',
+    title: 'Cómo viaja un carácter por la línea serial',
+    titleEn: 'Serial character frame',
+    svg: `<svg viewBox="0 0 360 170" class="dg" role="img" aria-label="Serial frame">
+      ${['idle', 'start', 'b0', 'b1', 'b2', 'b3', 'b4', 'b5', 'b6', 'b7', 'stop', 'idle'].map((t, i) => `<rect x="${8 + i * 29}" y="30" width="29" height="20" class="${t === 'start' ? 'box pw' : t === 'stop' ? 'box hl' : 'box'}"/><text x="${22 + i * 29}" y="44" text-anchor="middle" class="sm">${t}</text>`).join('')}
+      <path d="M8 80 H66 V120 H95 V80 H124 V120 H182 V80 H211 V120 H269 V80 H356" class="coil" stroke-width="2.5"/>
+      <text x="8" y="74" class="sm muted">1 (idle)</text><text x="8" y="134" class="sm muted">0</text>
+      <text x="180" y="156" text-anchor="middle" class="sm">1 start bit · 8 data bits (LSB first) · 1 stop bit = one ASCII character</text>
+    </svg>`,
+    explain: [
+      'En reposo la línea está en "1". Cada carácter empieza con un <b>bit de inicio</b> (0), luego <b>8 bits de datos</b> empezando por el menos significativo (LSB) y termina con un <b>bit de parada</b> (1).',
+      'Por eso ambos equipos deben tener la <b>misma velocidad (baudios)</b> y el mismo formato (por ejemplo 4800 baudios, 8 bits, sin paridad, 1 bit de parada = "4800 8N1").',
+      'Cada carácter es un código <b>ASCII</b>: así se forman las letras y números de las sentencias NMEA.',
+    ],
+    terms: [['start bit', 'bit de inicio'], ['stop bit', 'bit de parada'], ['LSB', 'bit menos significativo'], ['ASCII', 'ASCII'], ['8N1', '8 bits, sin paridad, 1 de parada']],
+  },
+  {
+    id: 'nmea-rmc',
+    title: 'Leer una sentencia NMEA de GPS',
+    titleEn: 'Reading a GPS NMEA sentence',
+    html: `<div class="nmea"><code><span class="n-s">$</span><span class="n-t">GP</span><span class="n-y">RMC</span>,<span class="n-d">123519</span>,<span class="n-d">A</span>,<span class="n-d">4807.038,N</span>,<span class="n-d">01131.000,E</span>,<span class="n-d">022.4</span>,<span class="n-d">084.4</span>,<span class="n-d">230394</span>,003.1,W<span class="n-c">*6A</span></code>
+      <table class="dtable"><tbody>
+        <tr><th>GP · RMC</th><td>GPS · recommended minimum data</td></tr>
+        <tr><th>123519</th><td>Time 12:35:19 UTC</td></tr>
+        <tr><th>A</th><td>Status: A = valid (V = not valid)</td></tr>
+        <tr><th>4807.038,N</th><td>Latitude 48° 07.038' North</td></tr>
+        <tr><th>01131.000,E</th><td>Longitude 11° 31.000' East</td></tr>
+        <tr><th>022.4 · 084.4</th><td>Speed over ground (knots) · course (degrees)</td></tr>
+        <tr><th>230394</th><td>Date 23-03-94</td></tr>
+        <tr><th>*6A</th><td>Checksum</td></tr>
+      </tbody></table></div>`,
+    explain: [
+      'Cuando un sensor "no da datos", conectar una laptop a la línea serial y ver las sentencias ayuda mucho: si aparece el <b>estado V</b> (no válido), el problema es el receptor o la antena, no el cable.',
+      'Los talker ID más comunes: <b>GP</b> GPS · <b>GN</b> GNSS combinado · <b>HE</b> gyro · <b>WI</b> viento. Las sentencias que empiezan con <b>$P</b> son propietarias de un fabricante.',
+    ],
+    terms: [['valid', 'válido'], ['latitude', 'latitud'], ['longitude', 'longitud'], ['speed over ground', 'velocidad sobre el fondo']],
+  },
+  {
+    id: 'ip-scheme',
+    title: 'Direcciones IP en una red doble',
+    titleEn: 'IP addressing on a dual network',
+    svg: `<svg viewBox="0 0 360 200" class="dg" role="img" aria-label="IP scheme">
+      <text x="10" y="20" class="acc">Example (not a real vessel)</text>
+      ${[['Controller A', '10.0.1.1', '10.0.2.1', 40], ['Controller B', '10.0.1.2', '10.0.2.2', 80], ['Operator station 1', '10.0.1.11', '10.0.2.11', 120], ['Operator station 2', '10.0.1.12', '10.0.2.12', 160]].map(([n, a, b2, y]) => `
+        <text x="10" y="${y}" class="sm">${n}</text>
+        <rect x="140" y="${y - 13}" width="100" height="20" rx="5" class="box"/><text x="190" y="${y + 1}" text-anchor="middle" class="sm">${a}</text>
+        <rect x="250" y="${y - 13}" width="100" height="20" rx="5" class="box pw"/><text x="300" y="${y + 1}" text-anchor="middle" class="sm">${b2}</text>`).join('')}
+      <text x="190" y="190" text-anchor="middle" class="sm acc">NET A (…1.x)</text>
+      <text x="300" y="190" text-anchor="middle" class="sm acc">NET B (…2.x)</text>
+    </svg>`,
+    explain: [
+      'Cada equipo tiene <b>una dirección en cada red</b>. La parte de red cambia (A o B) y la parte del equipo suele ser la misma, así es fácil de recordar.',
+      'Diagnóstico: <b>ping</b> a la dirección del equipo en la red A y en la B. Si responde en una y no en la otra, el problema está en el cable, el puerto o el switch de esa red.',
+      'Los números de este ejemplo son inventados; los reales están en la documentación de tu buque.',
+    ],
+    terms: [['IP address', 'dirección IP'], ['subnet', 'subred'], ['ping', 'ping'], ['host', 'equipo / host']],
+  },
+  {
+    id: 'cjoy-transfer',
+    title: 'Joystick independiente y traspaso de mando',
+    titleEn: 'Independent joystick and command transfer',
+    svg: `<svg viewBox="0 0 360 210" class="dg" role="img" aria-label="Joystick transfer">${ar('m5')}
+      ${bx(10, 20, 120, 54, 'Main DP', 'K-Pos', 'box hl')}
+      ${bx(230, 20, 120, 54, 'Independent', 'joystick (cJoy)', 'box pw')}
+      <path d="M130 40 H228" class="sig" marker-end="url(#m5)"/><path d="M228 56 H130" class="sig" marker-end="url(#m5)"/>
+      <text x="180" y="34" text-anchor="middle" class="sm">command transfer</text>
+      ${bx(120, 120, 120, 40, 'Thrusters', 'one master at a time')}
+      <path d="M70 74 L150 118" class="wire" marker-end="url(#m5)"/><path d="M290 74 L210 118" class="wire" marker-end="url(#m5)"/>
+      <text x="290" y="100" class="sm muted">own gyro input</text>
+      <text x="180" y="190" text-anchor="middle" class="sm">Always check which system is in command before testing</text>
+    </svg>`,
+    explain: [
+      'El joystick independiente tiene <b>su propio controlador, panel y conexión</b> a los propulsores y al gyro, para poder maniobrar si falla el DP principal.',
+      'Solo un sistema manda a la vez. Antes de probar o hacer mantenimiento, confirmar <b>quién tiene el mando</b> y cómo se transfiere, y probar la transferencia en ambos sentidos.',
+    ],
+    terms: [['command transfer', 'traspaso de mando'], ['in command', 'con el mando'], ['independent joystick', 'joystick independiente']],
+  },
+  {
+    id: 'dp-lifecycle',
+    title: 'Vida de un sistema DP',
+    titleEn: 'DP system lifecycle',
+    svg: `<svg viewBox="0 0 360 150" class="dg" role="img" aria-label="Lifecycle">${ar('m6')}
+      ${[['Design', 10], ['FAT', 80], ['Install', 150], ['CAT', 220], ['FMEA', 290]].map(([t, x], i) => `${bx(x, 20, 62, 40, t, '', i % 2 ? 'box pw' : 'box')}${i < 4 ? `<path d="M${x + 62} 40 H${x + 78}" class="wire" marker-end="url(#m6)"/>` : ''}`).join('')}
+      ${[['Operation', 30], ['Maintenance', 140], ['Upgrades', 250]].map(([t, x], i) => `${bx(x, 90, 90, 40, t, '', 'box hl')}${i < 2 ? `<path d="M${x + 90} 110 H${x + 108}" class="wire" marker-end="url(#m6)"/>` : ''}`).join('')}
+      <path d="M321 60 V75 H75 V88" class="sig" marker-end="url(#m6)"/>
+    </svg>`,
+    explain: [
+      '<b>FAT</b>: pruebas en fábrica. <b>CAT</b>: pruebas a bordo tras la instalación. Las <b>pruebas FMEA</b> confirman que una falla única no hace perder la posición.',
+      'Después vienen la operación, el mantenimiento (donde trabaja el ETO), el soporte y las <b>actualizaciones</b>. Tras cualquier cambio importante se actualiza el respaldo del sistema y, si aplica, el FMEA.',
+    ],
+    terms: [['factory acceptance test', 'prueba en fábrica'], ['customer acceptance test', 'prueba de aceptación'], ['upgrade', 'actualización']],
+  },
+);
