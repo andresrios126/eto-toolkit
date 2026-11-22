@@ -221,4 +221,44 @@ p { margin: 0 0 10px; }
 }
 .toast.show { opacity: 1; transform: translate(-50%, 0); }
 
+/* ---------- Glosario ---------- */
+.row-between { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.chips.wrap { flex-wrap: wrap; overflow: visible; }
+.term-row {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  min-height: 64px;
+  padding: 12px 16px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  color: var(--text);
+  text-decoration: none;
+}
+.term-row:active { background: var(--surface-2); }
+.term-main { display: flex; flex-direction: column; min-width: 0; }
+.term-main strong { font-size: 18px; }
+.term-main .muted { font-size: 15px; }
+.term-flags { flex: none; display: flex; gap: 6px; font-size: 18px; }
+.ok { color: var(--ok); font-weight: 800; }
+.accent { color: var(--primary); }
+.term-big { font-size: 28px; font-weight: 700; line-height: 1.25; margin: 0; overflow-wrap: anywhere; }
+.example { font-style: italic; }
+.progress { height: 8px; border-radius: 999px; background: var(--surface-2); overflow: hidden; }
+.progress-bar { height: 100%; background: var(--ok); border-radius: 999px; transition: width .3s; }
+.btn.is-ok { color: var(--ok); border-color: rgba(62, 207, 142, .5); }
+.btn-ok { background: var(--ok); color: #00291a; }
+.btn-review { background: var(--surface-2); color: var(--warn); border-color: rgba(255, 176, 32, .5); }
+.flashcard {
+  min-height: 260px;
+  justify-content: center;
+  text-align: center;
+  font: inherit;
+  cursor: pointer;
+  gap: 10px;
+}
+.flashcard .label { text-align: center; }
+.flashcard hr { width: 100%; border: 0; border-top: 1px solid var(--border); margin: 6px 0; }
+.flash-front, .flash-back { display: flex; flex-direction: column; gap: 8px; }
+.fail-list { text-align: left; margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 6px; }
+
 [hidden] { display: none !important; }

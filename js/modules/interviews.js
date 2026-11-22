@@ -2,8 +2,9 @@
 
 import { QUESTIONS, CATEGORIES } from '../data/questions.js';
 import { db, getSetting, setSetting } from '../db.js';
-import { speak, stop, getRate, setRate, onSpeechState, speechSupported } from '../speech.js';
+import { stop } from '../speech.js';
 import { h, toast, setHeader, formatTime } from '../ui.js';
+import { rateControl, speakButton, translationToggle } from '../components.js';
 
 const PRACTICE_SECONDS = 120;
 
@@ -36,48 +37,6 @@ async function getQuestion(id) {
   if (!q) return null;
   const c = await db.get('answers', id);
   return merged(q, c ? { [id]: c } : {});
-}
-
-// ---------- Componentes ----------
-
-function rateControl() {
-  const wrap = h('div', { class: 'segmented', role: 'group', 'aria-label': 'Velocidad de voz' });
-  const render = () => {
-    wrap.replaceChildren(
-      ...[['slow', '🐢 Lento'], ['normal', '▶︎ Normal']].map(([key, label]) =>
-        h('button', {
-          class: getRate() === key ? 'active' : '',
-          'aria-pressed': String(getRate() === key),
-          onclick: async () => { await setRate(key); render(); },
-        }, label)
-      )
-    );
-  };
-  render();
-  return h('div', { class: 'rate-row' }, h('span', { class: 'muted' }, 'Velocidad:'), wrap);
-}
-
-function speakButton(label, getTexts) {
-  const btn = h('button', { class: 'btn btn-secondary' }, `🔊 ${label}`);
-  btn.addEventListener('click', () => {
-    if (btn.classList.contains('speaking')) { stop(); return; }
-    document.querySelectorAll('.speaking').forEach((b) => b.classList.remove('speaking'));
-    btn.classList.add('speaking');
-    onSpeechState((on) => { if (!on) btn.classList.remove('speaking'); });
-    speak(getTexts());
-  });
-  if (!speechSupported()) btn.disabled = true;
-  return btn;
-}
-
-function translationToggle(textEs, label = 'Ver traducción') {
-  const p = h('p', { class: 'es', hidden: true }, textEs);
-  const btn = h('button', { class: 'link' }, `🇪🇸 ${label}`);
-  btn.addEventListener('click', () => {
-    p.hidden = !p.hidden;
-    btn.textContent = p.hidden ? `🇪🇸 ${label}` : '🇪🇸 Ocultar traducción';
-  });
-  return [btn, p];
 }
 
 // ---------- Vistas ----------

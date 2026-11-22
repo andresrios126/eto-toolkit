@@ -3,10 +3,11 @@
 //   answers  -> respuestas personalizadas { id, aEn, aEs, updatedAt }
 //   settings -> preferencias { key, value }
 //   log      -> historial de práctica { id(auto), qid, date, seconds }
+//   glossary -> estado/ediciones de términos y términos propios { id, fav, known, edited, custom, en, es, def, ex, cat }
 
 const DB_NAME = 'eto-toolkit';
-const DB_VERSION = 1;
-export const STORES = ['answers', 'settings', 'log'];
+const DB_VERSION = 2;
+export const STORES = ['answers', 'settings', 'log', 'glossary'];
 
 let dbPromise = null;
 
@@ -19,8 +20,14 @@ function openDB() {
       if (!db.objectStoreNames.contains('answers')) db.createObjectStore('answers', { keyPath: 'id' });
       if (!db.objectStoreNames.contains('settings')) db.createObjectStore('settings', { keyPath: 'key' });
       if (!db.objectStoreNames.contains('log')) db.createObjectStore('log', { keyPath: 'id', autoIncrement: true });
+      if (!db.objectStoreNames.contains('glossary')) db.createObjectStore('glossary', { keyPath: 'id' });
     };
-    req.onsuccess = () => resolve(req.result);
+    req.onsuccess = () => {
+      const conn = req.result;
+      // Si otra pestaña actualiza la base de datos, cerramos esta conexión.
+      conn.onversionchange = () => { conn.close(); dbPromise = null; };
+      resolve(conn);
+    };
     req.onerror = () => reject(req.error);
   });
   return dbPromise;

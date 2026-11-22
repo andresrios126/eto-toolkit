@@ -4,12 +4,13 @@ import { exportBackup, importBackup, requestPersistence } from './db.js';
 import { initSpeech, stop as stopSpeech } from './speech.js';
 import { h, toast, setHeader } from './ui.js';
 import { interviewsRoute } from './modules/interviews.js';
+import { glossaryRoute } from './modules/glossary.js';
 
-const APP_VERSION = '1.0.1';
+const APP_VERSION = '1.1.0';
 
 const MODULES = [
   { key: 'entrevistas', icon: '🎤', title: 'Entrevistas', desc: 'Preguntas y respuestas en inglés', ready: true },
-  { key: 'glosario', icon: '📖', title: 'Glosario', desc: 'Términos técnicos EN ↔ ES', ready: false },
+  { key: 'glosario', icon: '📖', title: 'Glosario', desc: 'Términos técnicos EN ↔ ES y tarjetas', ready: true },
   { key: 'certificados', icon: '📜', title: 'Certificados', desc: 'Vencimientos STCW y cursos', ready: false },
   { key: 'fallas', icon: '⚡', title: 'Fallas', desc: 'Registro de troubleshooting', ready: false },
 ];
@@ -95,7 +96,7 @@ function viewBackup() {
   root.replaceChildren(
     h('section', { class: 'card' },
       h('h2', {}, 'Exportar'),
-      h('p', { class: 'muted' }, 'Guarda un archivo JSON con tus respuestas personalizadas, ajustes e historial de práctica. Guárdalo en Archivos o iCloud.'),
+      h('p', { class: 'muted' }, 'Guarda un archivo JSON con tus respuestas personalizadas, tu progreso del glosario, tus términos propios, ajustes e historial de práctica. Guárdalo en Archivos o iCloud.'),
       h('button', { class: 'btn btn-primary btn-xl', onclick: doExport }, '⬆️ Exportar respaldo'),
     ),
     h('section', { class: 'card' },
@@ -119,6 +120,7 @@ async function route() {
   try {
     if (!mod) viewHome();
     else if (mod === 'entrevistas') cleanup = await interviewsRoute(root, rest);
+    else if (mod === 'glosario') cleanup = await glossaryRoute(root, rest);
     else if (mod === 'respaldo') viewBackup();
     else {
       const m = MODULES.find((x) => x.key === mod);

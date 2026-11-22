@@ -7,7 +7,7 @@ Aplicación web progresiva (PWA) en español para **Electro-Technical Officers**
 | Módulo | Estado |
 |---|---|
 | 🎤 **Entrevistas**: entrenador de entrevistas en inglés | ✅ Fase 1 |
-| 📖 Glosario | Próximamente |
+| 📖 **Glosario**: términos técnicos EN ↔ ES con tarjetas | ✅ Fase 2 |
 | 📜 Certificados | Próximamente |
 | ⚡ Fallas | Próximamente |
 
@@ -20,6 +20,15 @@ Aplicación web progresiva (PWA) en español para **Electro-Technical Officers**
 - Buscador, filtro por categoría y contador de preguntas practicadas.
 
 > Consejo: empieza editando **"Tell me about yourself"** y **"Tell me about a difficult fault"**. Tienen espacios como `[your name]` para completar con tus datos.
+
+### 📖 Glosario
+- **159 términos técnicos** en 10 categorías: conceptos eléctricos, generación, distribución y protección, motores y variadores, DP y propulsión, automatización, seguridad, herramientas, navegación y comunicaciones, y buque y operaciones offshore.
+- Cada término tiene su **traducción al español**, una **definición en inglés sencillo** y un **ejemplo de uso** como los que se dicen a bordo.
+- **🔊 Escuchar** el término, la definición o el ejemplo, en velocidad lenta o normal.
+- **Buscador** en inglés o español (no importan los acentos) y filtro por categoría.
+- **⭐ Favoritos** y **✅ Lo sé**, con una barra de progreso.
+- **🃏 Tarjetas de estudio (flashcards)**: eliges el grupo (por aprender, favoritos, una categoría o todos), la dirección (inglés → español o español → inglés) y la cantidad. Las que marcas **Repasar** vuelven a salir al final, y al terminar puedes repasar solo las que fallaste.
+- **➕ Tus propios términos**: agrega palabras nuevas que escuches a bordo. También puedes **editar** los términos incluidos y restaurar el original.
 
 ### 💾 Datos y respaldo
 - Todo se guarda **solo en tu dispositivo** (IndexedDB). No hay servidor ni cuenta.
@@ -75,8 +84,11 @@ js/app.js               Router, menú de inicio, respaldo
 js/db.js                IndexedDB + exportar/importar JSON
 js/speech.js            speechSynthesis (voz y velocidad)
 js/ui.js                Utilidades de interfaz
+js/components.js        Componentes compartidos (voz, velocidad)
 js/modules/interviews.js  Módulo 1: entrevistas
+js/modules/glossary.js  Módulo 2: glosario y tarjetas
 js/data/questions.js    Las 30 preguntas y respuestas modelo
+js/data/glossary.js     Los términos del glosario
 icons/                  Íconos de la app
 ```
 
