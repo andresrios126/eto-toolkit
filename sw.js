@@ -1,6 +1,6 @@
 // Service worker: guarda la app en caché para que funcione sin internet.
 // Al cambiar cualquier archivo, sube CACHE_VERSION para que los iPhones descarguen la nueva versión.
-const CACHE_VERSION = 'eto-toolkit-v2.3.0';
+const CACHE_VERSION = 'eto-toolkit-v2.4.0';
 
 const ASSETS = [
   './',
@@ -34,7 +34,10 @@ const ASSETS = [
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open(CACHE_VERSION).then((cache) => cache.addAll(ASSETS)).then(() => self.skipWaiting())
+    caches.open(CACHE_VERSION)
+      // cache: 'reload' evita copiar archivos viejos de la caché HTTP del navegador.
+      .then((cache) => cache.addAll(ASSETS.map((url) => new Request(url, { cache: 'reload' }))))
+      .then(() => self.skipWaiting())
   );
 });
 

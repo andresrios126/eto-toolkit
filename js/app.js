@@ -1,6 +1,7 @@
 // Punto de entrada: router por hash, menú de inicio, respaldo y registro del service worker.
 
-import { exportBackup, importBackup, requestPersistence, getSetting } from './db.js';
+import { exportBackup, importBackup, requestPersistence, getSetting, setSetting } from './db.js';
+import { rateControl } from './components.js';
 import { THEMES, CUSTOM_SWATCHES, applyTheme, currentTheme, saveTheme, themeVars, DEFAULT_THEME } from './themes.js';
 import { initSpeech, stop as stopSpeech } from './speech.js';
 import { h, toast, setHeader } from './ui.js';
@@ -15,14 +16,15 @@ import { TERMS } from './data/glossary.js';
 import { FAULTS } from './data/faults.js';
 import { DIAGRAMS } from './data/diagrams.js';
 
-const APP_VERSION = '2.3.0';
+const APP_VERSION = '2.4.0';
 
 const MODULES = [
-  { key: 'juego', icon: '🎮', title: 'Juego', desc: 'Opción múltiple, escribir y completar', cls: 'tile-game' },
+  { key: 'juego', icon: '🎮', title: 'Juego', desc: 'Opción múltiple y escritura', cls: 'tile-game' },
   { key: 'entrevistas', icon: '🎤', title: 'Entrevistas', desc: `${QUESTIONS.length} preguntas técnicas`, cls: 'tile-int' },
   { key: 'glosario', icon: '📖', title: 'Glosario', desc: `${TERMS.length} términos EN ↔ ES`, cls: 'tile-gloss' },
   { key: 'fallas', icon: '🔧', title: 'Fallas', desc: `${FAULTS.length} casos de diagnóstico`, cls: 'tile-fault' },
-  { key: 'guia', icon: '🧭', title: 'Guía visual', desc: `${DIAGRAMS.length} diagramas: DP, voltajes, radar…`, cls: 'tile-guide' },
+  { key: 'guia', icon: '🧭', title: 'Guía visual', desc: `${DIAGRAMS.length} diagramas de referencia`, cls: 'tile-guide' },
+  { key: 'ajustes', icon: '⚙️', title: 'Ajustes', desc: 'Tema, voz, sonido y respaldo', cls: 'tile-set' },
 ];
 
 const root = document.getElementById('app');
@@ -52,16 +54,12 @@ async function viewHome() {
         )
       ),
     ),
-    h('div', { class: 'btn-row' },
-      h('a', { class: 'btn btn-secondary', href: '#/apariencia' }, '🎨 Apariencia'),
-      h('a', { class: 'btn btn-secondary', href: '#/respaldo' }, '💾 Respaldo'),
-    ),
     h('p', { class: 'muted center small' }, `v${APP_VERSION} · Los datos se guardan solo en este dispositivo.`),
   );
 }
 
-function viewAppearance() {
-  setHeader('Apariencia', '#/');
+function viewSettings() {
+  setHeader('Ajustes', '#/');
   let choice = currentTheme();
 
   const preview = (vars) => h('div', { class: 'theme-prev', style: `background:${vars['--bg']}` },
@@ -100,8 +98,36 @@ function viewAppearance() {
   colorInput.addEventListener('change', () => pick({ id: 'custom', color: colorInput.value }));
   render();
 
+  const soundSwitch = h('button', { class: 'switch', role: 'switch', 'aria-label': 'Sonidos del juego' });
+  getSetting('sound', true).then((on) => { soundSwitch.classList.toggle('on', on); soundSwitch.setAttribute('aria-checked', String(on)); });
+  soundSwitch.onclick = async () => {
+    const on = !soundSwitch.classList.contains('on');
+    await setSetting('sound', on);
+    soundSwitch.classList.toggle('on', on);
+    soundSwitch.setAttribute('aria-checked', String(on));
+  };
+
+  const updateBtn = h('button', { class: 'btn btn-secondary' }, '🔄 Buscar actualización');
+  updateBtn.onclick = async () => {
+    updateBtn.disabled = true;
+    updateBtn.textContent = 'Buscando…';
+    try {
+      const reg = await navigator.serviceWorker?.getRegistration();
+      await reg?.update();
+      if (reg?.installing || reg?.waiting) {
+        updateBtn.textContent = 'Instalando versión nueva…';
+        return; // la app se recarga sola al activarse
+      }
+      toast('Ya tienes la versión más reciente');
+    } catch (_) {
+      toast('Sin conexión: inténtalo con internet');
+    }
+    updateBtn.disabled = false;
+    updateBtn.textContent = '🔄 Buscar actualización';
+  };
+
   root.replaceChildren(
-    h('h2', { class: 'label' }, '🎨 Temas'),
+    h('h2', { class: 'label' }, '🎨 Tema'),
     grid,
     h('section', { class: 'card' },
       h('h2', {}, '🖌️ Color de fondo personalizado'),
@@ -110,12 +136,25 @@ function viewAppearance() {
       h('label', { class: 'label' }, 'O elige cualquier color (toca el recuadro):'),
       colorInput,
     ),
-    h('a', { class: 'btn btn-secondary', href: '#/' }, '← Volver al inicio'),
+    h('h2', { class: 'label' }, '🔊 Voz y sonido'),
+    h('section', { class: 'card' },
+      h('p', { class: 'muted small' }, 'Velocidad de la voz en inglés (también se cambia en cada pantalla):'),
+      rateControl(),
+      h('div', { class: 'set-row' }, h('span', {}, 'Sonidos del juego'), soundSwitch),
+    ),
+    h('h2', { class: 'label' }, '💾 Datos'),
+    h('a', { class: 'btn btn-secondary', href: '#/respaldo' }, '💾 Respaldo: exportar o importar'),
+    h('h2', { class: 'label' }, 'ℹ️ App'),
+    h('section', { class: 'card' },
+      h('div', { class: 'set-row' }, h('span', {}, 'Versión'), h('b', {}, APP_VERSION)),
+      h('p', { class: 'muted small' }, 'La app se actualiza sola cuando hay internet. Si algo se ve raro, toca el botón para buscar la versión más reciente.'),
+      updateBtn,
+    ),
   );
 }
 
 function viewBackup() {
-  setHeader('Respaldo', '#/');
+  setHeader('Respaldo', '#/ajustes');
 
   const doExport = async () => {
     const data = await exportBackup();
@@ -190,7 +229,7 @@ async function route() {
     else if (mod === 'fallas') cleanup = await faultsRoute(root, rest);
     else if (mod === 'guia') cleanup = await guideRoute(root, rest);
     else if (mod === 'respaldo') viewBackup();
-    else if (mod === 'apariencia') viewAppearance();
+    else if (mod === 'ajustes' || mod === 'apariencia') viewSettings();
     else { location.hash = '#/'; return; }
   } catch (e) {
     console.error(e);
@@ -210,14 +249,19 @@ async function start() {
   route();
 
   if ('serviceWorker' in navigator) {
+    // Si ya había una versión instalada y se activa una nueva, recargamos para usarla.
+    const hadController = Boolean(navigator.serviceWorker.controller);
+    let reloading = false;
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+      if (!hadController || reloading) return;
+      reloading = true;
+      location.reload();
+    });
     navigator.serviceWorker.register('./sw.js').then((reg) => {
-      reg.addEventListener('updatefound', () => {
-        const nw = reg.installing;
-        nw?.addEventListener('statechange', () => {
-          if (nw.state === 'installed' && navigator.serviceWorker.controller) {
-            toast('Nueva versión lista. Cierra y abre la app para actualizar.');
-          }
-        });
+      reg.update().catch(() => {});
+      // Al volver a la app (por ejemplo, desde otra app), buscar versión nueva.
+      document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible') reg.update().catch(() => {});
       });
     }).catch((e) => console.warn('SW no registrado', e));
   }

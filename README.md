@@ -42,14 +42,15 @@ Aplicación web progresiva (PWA) en español para **Electro-Technical Officers**
 ### 🧭 Guía visual
 Diagramas dibujados en la app (funcionan sin internet): visión general DP, redundancia DP2 con cuadro dividido, clases DP, referencias de posición, niveles de alerta, diagrama unifilar, tipos de voltaje, estrella/triángulo, sincronización, VFD, tipos de propulsores, lazo 4-20 mA, radar, LOTO y tabla de sensores. Cada uno con explicación en español y términos clave para escuchar en inglés.
 
-### 🎨 Apariencia
-- En **Inicio → 🎨 Apariencia** eliges el tema: **Claro** (predeterminado), **Arena**, **Menta**, **Cielo**, **Lavanda**, **Grafito** o **Noche eléctrica**.
+### ⚙️ Ajustes y apariencia
+- Toca **⚙️** (arriba a la derecha, en cualquier pantalla) o la tarjeta **Ajustes** del inicio. Ahí eliges el tema: **Claro** (predeterminado), **Arena**, **Menta**, **Cielo**, **Durazno**, **Lavanda**, **Grafito** o **Noche eléctrica**.
 - **Color de fondo personalizado**: elige un color de la paleta o cualquier color; la app ajusta tarjetas, bordes y textos automáticamente para que se lean bien.
+- También: velocidad de la voz, sonidos del juego, respaldo y **🔄 Buscar actualización**.
 
 ### 💾 Datos y respaldo
 - Todo se guarda **solo en tu dispositivo** (IndexedDB). No hay servidor ni cuenta.
 - El respaldo incluye respuestas editadas, progreso del juego y del glosario, términos y casos propios.
-- En **Inicio → Respaldo de datos** puedes **exportar** un archivo `.json` (en el iPhone se abre el menú Compartir: elige *Guardar en Archivos* o iCloud Drive) e **importarlo** después.
+- En **⚙️ Ajustes → Respaldo** puedes **exportar** un archivo `.json` (en el iPhone se abre el menú Compartir: elige *Guardar en Archivos* o iCloud Drive) e **importarlo** después.
 - ⚠️ Si borras la app de la pantalla de inicio o los datos de Safari, se pierde lo guardado. **Exporta un respaldo de vez en cuando.**
 
 ---
@@ -84,7 +85,7 @@ El repositorio ya trae un flujo de GitHub Actions (`.github/workflows/pages.yml`
 **Voz en inglés:** la lectura usa las voces del iPhone. Para una voz mejor, ve a *Ajustes → Accesibilidad → Contenido leído → Voces → Inglés* y descarga una voz "Mejorada" (por ejemplo, Samantha o Ava). Si no escuchas nada, revisa que el iPhone no esté en modo silencio.
 
 ### Actualizaciones
-Cuando se publique una versión nueva, abre la app con internet. Verás el aviso *"Nueva versión lista"*. Cierra la app por completo (desliza hacia arriba en el selector de apps) y vuelve a abrirla.
+La app se actualiza sola: cuando la abres con internet y hay una versión nueva, se descarga y se recarga automáticamente. Si algo se ve raro, ve a **⚙️ Ajustes → 🔄 Buscar actualización**.
 
 ---
 

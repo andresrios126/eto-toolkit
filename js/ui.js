@@ -34,6 +34,9 @@ export function toast(msg) {
 
 export function setHeader(title, backHash) {
   document.getElementById('title').textContent = title;
+  // El botón de ajustes se oculta dentro de Ajustes y durante una lección.
+  const gear = document.getElementById('settings');
+  if (gear) gear.hidden = /^#\/(ajustes|apariencia|juego\/leccion)/.test(location.hash);
   const back = document.getElementById('back');
   if (backHash) {
     back.hidden = false;

@@ -45,6 +45,7 @@ export const THEMES = [
   { id: 'arena', name: 'Arena', light: true, bg: '#f6efe2', extra: { '--accent': '#2a7fc9', '--primary-ink': '#94600a' } },
   { id: 'menta', name: 'Menta', light: true, bg: '#eaf6f0', extra: { '--accent': '#159a7e', '--on-accent': '#ffffff' } },
   { id: 'cielo', name: 'Cielo', light: true, bg: '#e8f1fb' },
+  { id: 'durazno', name: 'Durazno', light: true, bg: '#fcefe6', extra: { '--accent': '#e2683c', '--on-accent': '#ffffff', '--primary-ink': '#9a5a00' } },
   { id: 'lavanda', name: 'Lavanda', light: true, bg: '#f1eefa', extra: { '--accent': '#6a5cf0', '--on-accent': '#ffffff' } },
   { id: 'grafito', name: 'Grafito', light: false, bg: '#1d1f24' },
   { id: 'noche', name: 'Noche eléctrica', light: false, bg: '#0b1220',
