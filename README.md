@@ -9,7 +9,6 @@ Aplicación web progresiva (PWA) en español para **Electro-Technical Officers**
 | 🎤 **Entrevistas**: entrenador de entrevistas en inglés | ✅ Fase 1 |
 | 📖 Glosario | Próximamente |
 | 📜 Certificados | Próximamente |
-| 💪 Gym | Próximamente |
 | ⚡ Fallas | Próximamente |
 
 ### 🎤 Entrenador de entrevistas

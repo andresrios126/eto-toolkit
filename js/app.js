@@ -5,13 +5,12 @@ import { initSpeech, stop as stopSpeech } from './speech.js';
 import { h, toast, setHeader } from './ui.js';
 import { interviewsRoute } from './modules/interviews.js';
 
-const APP_VERSION = '1.0.0';
+const APP_VERSION = '1.0.1';
 
 const MODULES = [
   { key: 'entrevistas', icon: '🎤', title: 'Entrevistas', desc: 'Preguntas y respuestas en inglés', ready: true },
   { key: 'glosario', icon: '📖', title: 'Glosario', desc: 'Términos técnicos EN ↔ ES', ready: false },
   { key: 'certificados', icon: '📜', title: 'Certificados', desc: 'Vencimientos STCW y cursos', ready: false },
-  { key: 'gym', icon: '💪', title: 'Gym', desc: 'Rutinas a bordo', ready: false },
   { key: 'fallas', icon: '⚡', title: 'Fallas', desc: 'Registro de troubleshooting', ready: false },
 ];
 
