@@ -3,6 +3,6 @@
 // Mientras apiKey y projectId estén vacíos, la sección "Cuenta" aparece como "pendiente de configurar".
 
 export const CLOUD_CONFIG = {
-  apiKey: '',
-  projectId: '',
+  apiKey: 'AIzaSyDr9e013pG2ybcYntU38hgIFde2PYZOkp4',
+  projectId: 'eto-toolkit',
 };

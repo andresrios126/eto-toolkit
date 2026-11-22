@@ -1,7 +1,7 @@
 # Guía para mejoras futuras
 
-## ▶️ Cuentas de usuario: falta conectar Firebase
-La función ya está hecha y probada (v3.4.0): **usuario + contraseña sin correo**, sesión que queda abierta hasta "Cerrar sesión", sincronización automática con combinación del avance, y funciona sin internet. Solo falta conectar el proyecto de Firebase del dueño.
+## ✅ Cuentas de usuario: Firebase conectado (v3.4.1)
+La función ya está hecha y probada (v3.4.0): **usuario + contraseña sin correo**, sesión que queda abierta hasta "Cerrar sesión", sincronización automática con combinación del avance, y funciona sin internet. Firebase quedó conectado el 22-nov-2026 (proyecto `eto-toolkit`, Firestore en nam5). Los pasos se dejan como referencia.
 
 **Pasos en console.firebase.google.com (≈10 min):**
 1. **Crear proyecto** (p. ej. `eto-toolkit`; Google Analytics se puede desactivar).
@@ -69,7 +69,6 @@ service cloud.firestore {
 > Al cambiar archivos, sube `CACHE_VERSION` en `sw.js` (y `APP_VERSION` en `js/app.js`) para que el iPhone descargue la versión nueva.
 
 ## Ideas pendientes
-- **Cuentas de usuario**: hechas; falta conectar Firebase (ver arriba).
 - **Repaso inteligente**: que el juego repita más seguido lo que fallas (repetición espaciada).
 - **Notas por empresa**: apuntar lo que investigues de cada empresa antes de su entrevista.
 - **Más preguntas de "Mis equipos y sistemas"** a medida que trabajes con equipos nuevos.

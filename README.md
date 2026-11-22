@@ -68,7 +68,7 @@ Diagramas dibujados en la app (funcionan sin internet): visión general DP, redu
 ### 👤 Cuenta y sincronización
 - En **⚙️ → Cuenta**: crea una cuenta con **usuario y contraseña** (sin correo) e inicia sesión **una vez** en cada dispositivo. Tu avance se sincroniza solo entre todos.
 - Funciona sin internet (sincroniza al volver la conexión) y también sin cuenta (el avance queda en ese dispositivo).
-- Requiere conectar un proyecto de Firebase (pasos en `MEJORAS.md`).
+- Conectado al proyecto de Firebase `eto-toolkit` (detalles en `MEJORAS.md`).
 
 ### ⚙️ Ajustes y apariencia
 - Toca **⚙️** (arriba a la derecha, en cualquier pantalla). Ahí eliges el tema: **Claro** (predeterminado), **Arena**, **Menta**, **Cielo**, **Durazno**, **Lavanda**, **Grafito** o **Noche eléctrica**.
