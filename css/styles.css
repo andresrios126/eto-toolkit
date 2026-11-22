@@ -496,4 +496,38 @@ p { margin: 0 0 10px; }
 .lvl.yellow { border-color: #ffd34d; } .lvl.yellow b { color: #ffd34d; }
 .lvl.red { border-color: var(--danger); } .lvl.red b { color: var(--danger); }
 
+.note { margin: 0; padding: 12px 14px; border-radius: 12px; background: rgba(245, 180, 0, .12); border: 1px solid rgba(245, 180, 0, .4); font-size: 15px; }
+
+/* ---------- Juegos de escritura ---------- */
+.mask { display: flex; flex-wrap: wrap; gap: 6px 16px; justify-content: center; padding: 6px 0; }
+.mword { display: flex; gap: 4px; }
+.mask .cell {
+  width: 25px; height: 38px; display: grid; place-items: center;
+  border-bottom: 3px solid var(--accent); border-radius: 6px 6px 2px 2px;
+  background: var(--surface); font-size: 20px; font-weight: 800;
+}
+.mask .cell.shown { color: var(--primary); }
+.mask .gap { width: 14px; }
+.mask.right .cell { border-color: var(--ok); color: var(--ok); }
+.mask.wrong .cell { border-color: var(--danger); }
+.type-input { font-size: 22px; text-align: center; font-weight: 700; min-height: 60px; }
+.type-input.right { border-color: var(--ok); color: var(--ok); }
+.type-input.wrong { border-color: var(--danger); color: var(--danger); }
+.tiles { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
+.tile-l {
+  width: 48px; height: 52px; border-radius: 12px; border: 2px solid var(--border);
+  background: var(--surface-2); color: var(--text); font: inherit; font-size: 22px; font-weight: 800;
+  box-shadow: 0 4px 0 #0e1628; cursor: pointer;
+}
+.tile-l:active:not(:disabled) { transform: translateY(3px); box-shadow: none; }
+.tile-l:disabled { opacity: .25; box-shadow: none; }
+.listen-big {
+  align-self: center; display: flex; flex-direction: column; align-items: center; gap: 4px;
+  width: 120px; height: 120px; border-radius: 28px; border: 0;
+  background: var(--accent); color: #001428; font: inherit; font-size: 44px; font-weight: 800; cursor: pointer;
+  box-shadow: 0 6px 0 #1d6fb3;
+}
+.listen-big span { font-size: 15px; }
+.listen-big:active { transform: translateY(4px); box-shadow: none; }
+
 [hidden] { display: none !important; }

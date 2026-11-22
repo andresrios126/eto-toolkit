@@ -121,6 +121,9 @@ async function viewDetail(root, id) {
   const next = QUESTIONS[idx + 1];
 
   root.replaceChildren(
+    q.cat === 'cv' && !q.edited
+      ? h('p', { class: 'note' }, '⚠️ Respuesta basada en los equipos con los que trabajaste. Verifica que cada dato sea exacto y ajústala con "Editar" (se guarda solo en tu iPhone).')
+      : null,
     rateControl(),
     h('section', { class: 'card' },
       h('h2', { class: 'label' }, `Pregunta ${idx + 1} de ${QUESTIONS.length}`),

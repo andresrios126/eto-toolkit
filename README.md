@@ -6,14 +6,15 @@ Aplicación web progresiva (PWA) en español para **Electro-Technical Officers**
 
 | Módulo | Qué tiene |
 |---|---|
-| 🎮 **Juego** | Lecciones de opción múltiple con XP, racha, meta diaria y niveles de voltaje |
-| 🎤 **Entrevistas** | 72 preguntas técnicas con respuesta modelo EN/ES, puntos clave, voz y práctica de 2 min |
-| 📖 **Glosario** | 268 términos técnicos EN ↔ ES con definición, ejemplo, voz y tarjetas |
+| 🎮 **Juego** | Opción múltiple, escribir y completar palabras, ordenar letras y dictado, con XP, racha y niveles de voltaje |
+| 🎤 **Entrevistas** | 91 preguntas técnicas, incluidas las de mis equipos y sistemas con respuesta modelo EN/ES, puntos clave, voz y práctica de 2 min |
+| 📖 **Glosario** | 302 términos técnicos EN ↔ ES con definición, ejemplo, voz y tarjetas |
 | 🔧 **Fallas** | 21 casos de troubleshooting + tus propios casos |
 | 🧭 **Guía visual** | 15 diagramas de referencia: DP, redundancia, voltajes, VFD, thrusters, radar, LOTO… |
 
 ### 🎮 Juego (estilo app de idiomas, con tema eléctrico)
-- Un **camino de lecciones** en 3 unidades: vocabulario técnico (una lección por categoría del glosario), entrevista técnica (una por categoría de preguntas) y diagnóstico de fallas.
+- Un **camino de lecciones** en 4 unidades: vocabulario técnico (una lección por categoría del glosario), **escribe y completa**, entrevista técnica (una por categoría de preguntas) y diagnóstico de fallas.
+- **Escribe y completa** (inglés y español): completar la palabra con pistas de letras, ordenar letras, escuchar y escribir (dictado), completar la frase y escritura mixta. Acepta respuestas sin acentos o con un error pequeño, y te muestra la forma correcta. El botón 💡 *Pista* revela una letra (da 5 XP en vez de 10).
 - Tipos de pregunta: término → significado, español → inglés, definición → término, completar la frase, pregunta en español → pregunta en inglés, punto clave de la respuesta, completar la respuesta modelo, causa posible de una falla y comprensión de historias en inglés.
 - **3 fusibles** (vidas) por lección; las falladas vuelven a salir al final.
 - **10 XP** por acierto, combo y bonus por lección perfecta; **estrellas** por lección, **racha** de días y **meta diaria** de 50 XP.
@@ -22,12 +23,15 @@ Aplicación web progresiva (PWA) en español para **Electro-Technical Officers**
 - Sonidos de acierto/error (se pueden silenciar).
 
 ### 🎤 Entrenador de entrevistas
-- **72 preguntas** en 14 categorías: DP (CAM/TAM, capability plot, consequence analysis, trials, alertas, UPS, drift-off/drive-off), thrusters, generadores, switchboard, PMS, seguridad eléctrica, LOTO, alto voltaje, propulsión diésel-eléctrica, automatización y sensores, navegación y radares, baterías e híbridos, situacionales y experiencia personal.
+
+> Las preguntas de **Mis equipos y sistemas** se basan solo en los equipos y sistemas DP con los que trabajé, sin datos personales. Verifícalas y personalízalas con **Editar**: tus cambios se guardan solo en el teléfono.
+
+- **91 preguntas** en 15 categorías, incluida **Mis equipos y sistemas** (Kongsberg K-Pos DP21, Navis NavDP 4022 y Marine Technologies; generadores de cola Leroy Somer; Z-Peller; Veth Z-drive; generadores Caterpillar; DP1 vs DP2; operator station; PLC; osciloscopio; SAP). Las demás: DP (CAM/TAM, capability plot, consequence analysis, trials, alertas, UPS, drift-off/drive-off), thrusters, generadores, switchboard, PMS, seguridad eléctrica, LOTO, alto voltaje, propulsión diésel-eléctrica, automatización y sensores, navegación y radares, baterías e híbridos, situacionales y experiencia personal.
 - Cada pregunta tiene **respuesta modelo en inglés sencillo**, **traducción** y **3 puntos clave** que el entrevistador espera escuchar.
 - **🔊 Voz** lenta / normal, **🎯 modo práctica** con temporizador de 2 minutos y **✏️ edición** de respuestas.
 
 ### 📖 Glosario
-- **268 términos** en 16 categorías: conceptos eléctricos, generación, distribución y protección, motores y variadores, DP y propulsión, **terminología DP**, automatización, **sensores**, seguridad, herramientas, navegación, **radares**, **tipos de buques**, **propulsores**, **tipos de voltaje** y buque y operaciones.
+- **302 términos** en 18 categorías, incluidas **Mis equipos y sistemas** y **Frases para la entrevista**. Las demás: conceptos eléctricos, generación, distribución y protección, motores y variadores, DP y propulsión, **terminología DP**, automatización, **sensores**, seguridad, herramientas, navegación, **radares**, **tipos de buques**, **propulsores**, **tipos de voltaje** y buque y operaciones.
 - Definición y ejemplo en inglés, voz, búsqueda sin acentos, favoritos, "lo sé", **tarjetas** y **términos propios**.
 
 ### 🔧 Fallas

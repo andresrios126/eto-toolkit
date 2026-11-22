@@ -127,6 +127,145 @@ const G = {
   },
 };
 
+
+// ---------- Juegos de escritura (completar, ordenar letras, dictado) ----------
+
+const stripAccents = (x) => x.normalize('NFD').replace(/[̀-ͯ]/g, '');
+const normKeep = (x) => x.toLowerCase().replace(/[-’'.,!?¿¡]/g, ' ').replace(/\s+/g, ' ').trim();
+const normLoose = (x) => stripAccents(normKeep(x));
+
+function lev(a, b) {
+  const m = a.length, n = b.length;
+  const d = Array.from({ length: m + 1 }, (_, i) => [i, ...Array(n).fill(0)]);
+  for (let j = 1; j <= n; j++) d[0][j] = j;
+  for (let i = 1; i <= m; i++) {
+    for (let j = 1; j <= n; j++) {
+      d[i][j] = Math.min(d[i - 1][j] + 1, d[i][j - 1] + 1, d[i - 1][j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1));
+    }
+  }
+  return d[m][n];
+}
+
+// Compara lo escrito con las respuestas aceptadas. Devuelve { ok, note }.
+export function checkTyped(given, answers) {
+  const g = normKeep(given);
+  if (!g) return { ok: false };
+  for (const a of answers) if (normKeep(a) === g) return { ok: true };
+  for (const a of answers) if (normLoose(a) === normLoose(g)) return { ok: true, note: `Cuidado con los acentos: ${a}` };
+  for (const a of answers) {
+    const A = normLoose(a), G2 = normLoose(g);
+    const tol = A.length >= 10 ? 2 : A.length >= 5 ? 1 : 0;
+    if (tol && lev(A, G2) <= tol) return { ok: true, note: `Casi perfecto. Se escribe: ${a}` };
+  }
+  return { ok: false };
+}
+
+const WORD_RE = /^[a-zA-ZáéíóúüñÁÉÍÓÚÜÑ][a-zA-ZáéíóúüñÁÉÍÓÚÜÑ\- ]{1,27}$/;
+
+function altsEn(t) {
+  const out = [];
+  const b = base(t.en);
+  b.split(/\s*\/\s*/).forEach((x) => out.push(x.trim()));
+  (t.en.match(/\(([^)]+)\)/g) || []).forEach((x) => out.push(x.slice(1, -1).trim()));
+  return [...new Set(out)].filter((x) => WORD_RE.test(x));
+}
+
+function altsEs(t) {
+  const out = [];
+  t.es.split(/\s*\/\s*/).forEach((x) => {
+    out.push(x.replace(/\s*\(.*?\)\s*/g, ' ').trim());
+    (x.match(/\(([^)]+)\)/g) || []).forEach((y) => out.push(y.slice(1, -1).trim()));
+  });
+  return [...new Set(out)].filter((x) => WORD_RE.test(x));
+}
+
+// La respuesta "principal" a mostrar: la más larga razonable (aprende la palabra completa, no la sigla).
+const primary = (alts) => [...alts].sort((a, b) => b.length - a.length).find((x) => x.length <= 28) || alts[0];
+
+// Revela la primera letra de cada palabra y ~30 % de las demás.
+function makeMask(word) {
+  const chars = [...word];
+  const reveal = chars.map((c, i) => c === ' ' || c === '-' || i === 0 || chars[i - 1] === ' ' || chars[i - 1] === '-');
+  const letters = chars.map((c, i) => (!reveal[i] ? i : -1)).filter((i) => i >= 0);
+  shuffle(letters).slice(0, Math.floor(letters.length * 0.3)).forEach((i) => { reveal[i] = true; });
+  return reveal;
+}
+
+function typeQ(t, lang) {
+  const alts = lang === 'en' ? altsEn(t) : altsEs(t);
+  if (!alts.length) return null;
+  const word = primary(alts);
+  return {
+    mode: 'type', lang, word, answers: alts, correctText: word, reveal: makeMask(word),
+    prompt: lang === 'en' ? 'Completa la palabra en inglés' : 'Completa la palabra en español',
+    big: lang === 'en' ? t.es : base(t.en),
+    text: lang === 'en' ? t.def : null, textLang: 'en',
+    say: lang === 'en' ? word : base(t.en), sayAfter: lang === 'en',
+    kind: lang === 'en' ? '✍️ 🇪🇸 → 🇬🇧' : '✍️ 🇬🇧 → 🇪🇸', small: true,
+  };
+}
+
+function tilesQ(t, lang) {
+  const alts = (lang === 'en' ? altsEn(t) : altsEs(t)).filter((x) => !/[\s-]/.test(x) && x.length >= 4 && x.length <= 12);
+  if (!alts.length) return null;
+  const word = primary(alts);
+  let letters = shuffle([...word.toLowerCase()]);
+  for (let i = 0; i < 5 && letters.join('') === word.toLowerCase(); i++) letters = shuffle(letters);
+  return {
+    mode: 'tiles', lang, word, answers: [word], correctText: word, letters,
+    prompt: lang === 'en' ? 'Ordena las letras (inglés)' : 'Ordena las letras (español)',
+    big: lang === 'en' ? t.es : base(t.en),
+    say: lang === 'en' ? word : base(t.en), sayAfter: lang === 'en',
+    kind: '🔤 ' + (lang === 'en' ? '🇪🇸 → 🇬🇧' : '🇬🇧 → 🇪🇸'), small: true,
+  };
+}
+
+const W = {
+  typeEn: (t) => typeQ(t, 'en'),
+  typeEs: (t) => typeQ(t, 'es'),
+  tilesEn: (t) => tilesQ(t, 'en'),
+  tilesEs: (t) => tilesQ(t, 'es'),
+  // Escucha la palabra en inglés y escríbela
+  dictation(t) {
+    const alts = altsEn(t).filter((x) => x.length >= 4);
+    if (!alts.length) return null;
+    const word = primary(alts);
+    const reveal = [...word].map((c, i) => c === ' ' || c === '-' || i === 0);
+    return {
+      mode: 'type', lang: 'en', word, answers: alts, correctText: word, reveal,
+      prompt: 'Escucha y escribe en inglés', sub: `Pista: significa «${t.es}»`,
+      say: word, autoSay: true, kind: '🎧 Dictation', listen: true,
+    };
+  },
+  // Frase de ejemplo con hueco: escribe la palabra que falta
+  gapType(t) {
+    if (!t.ex) return null;
+    const word = base(t.en);
+    if (!WORD_RE.test(word) || word.length < 3) return null;
+    const re = new RegExp(`\\b${escRe(word)}\\b`, 'i');
+    const m = t.ex.match(re);
+    if (!m) return null;
+    const exact = m[0];
+    return {
+      mode: 'type', lang: 'en', word: exact, answers: [exact], correctText: exact, reveal: makeMask(exact),
+      prompt: 'Escribe la palabra que falta', sub: `Pista: «${t.es}»`,
+      text: t.ex.replace(re, '_____'), textLang: 'en', say: t.ex, sayAfter: true, kind: '✍️ Fill the gap',
+    };
+  },
+  // Frase útil de entrevista con una palabra faltante
+  phraseGap(t) {
+    const words = t.en.split(/\s+/).map((w) => w.replace(/[^a-zA-Z]/g, '')).filter((w) => w.length >= 4);
+    if (!words.length) return null;
+    const word = pick(words);
+    const re = new RegExp(`\\b${escRe(word)}\\b`);
+    return {
+      mode: 'type', lang: 'en', word, answers: [word], correctText: word, reveal: makeMask(word),
+      prompt: 'Completa la frase en inglés', sub: `«${t.es}»`,
+      text: t.en.replace(re, '_____'), textLang: 'en', say: t.en, sayAfter: true, kind: '💬 Interview phrase',
+    };
+  },
+};
+
 // Vocabulario técnico para huecos: términos cortos del glosario.
 const VOCAB = [...new Set(
   TERMS.map((t) => base(t.en)).filter((w) => w.length >= 4 && w.length <= 22 && !/[^a-zA-Z\- ]/.test(w))
@@ -139,7 +278,7 @@ const questionCats = Object.keys(QCATS);
 
 const ICONS = {
   basic: '⚡', gen: '🔄', dist: '🔌', motor: '⚙️', dp: '🧭', auto: '🤖', safety: '🦺', tools: '🧰', nav: '📡',
-  vessel: '🚢', ships: '🛳️', prop: '🌀', volt: '🔋', sensors: '🌡️', radar: '📡', dpterm: '🎯',
+  vessel: '🚢', ships: '🛳️', prop: '🌀', volt: '🔋', sensors: '🌡️', radar: '📡', dpterm: '🎯', career: '📄', phrases: '💬', cv: '📄', hr: '🤝',
   thruster: '🌀', swbd: '🎛️', pms: '🖥️', loto: '🔒', personal: '🙋', hv: '⚠️', batt: '🔋', situ: '💬',
 };
 
@@ -147,6 +286,18 @@ export const UNITS = [
   {
     id: 'u-gloss', title: 'Vocabulario técnico', sub: 'Glosario EN ↔ ES',
     lessons: glossaryCats.map((c) => ({ id: `g-${c}`, title: GCATS[c], icon: ICONS[c] || '📖', type: 'gloss', cat: c })),
+  },
+  {
+    id: 'u-write', title: 'Escribe y completa', sub: 'Vocabulario en inglés y español',
+    lessons: [
+      { id: 'w-type-en', title: 'Completa la palabra (inglés)', icon: '✍️', type: 'write', modes: ['typeEn'] },
+      { id: 'w-type-es', title: 'Completa la palabra (español)', icon: '📝', type: 'write', modes: ['typeEs'] },
+      { id: 'w-tiles-en', title: 'Ordena las letras (inglés)', icon: '🔤', type: 'write', modes: ['tilesEn'] },
+      { id: 'w-tiles-es', title: 'Ordena las letras (español)', icon: '🔡', type: 'write', modes: ['tilesEs'] },
+      { id: 'w-listen', title: 'Escucha y escribe', icon: '🎧', type: 'write', modes: ['dictation'] },
+      { id: 'w-gap', title: 'Completa la frase', icon: '🧩', type: 'write', modes: ['gapType', 'phraseGap'] },
+      { id: 'w-mix', title: 'Escritura mixta', icon: '⚡', type: 'write', modes: ['typeEn', 'typeEs', 'tilesEn', 'tilesEs', 'dictation', 'gapType'] },
+    ],
   },
   {
     id: 'u-int', title: 'Entrevista técnica', sub: 'Preguntas y respuestas modelo',
@@ -177,15 +328,25 @@ async function customFaults() {
 // Construye las preguntas de una lección.
 async function buildQuestions(lesson) {
   const out = [];
-  const tryAdd = (q) => { if (q && q.options.length >= 2) out.push(q); };
+  const tryAdd = (q) => { if (q && (q.mode || q.options.length >= 2)) out.push(q); };
   const terms = [...TERMS, ...(await customTerms())];
   const faults = [...FAULTS, ...(await customFaults())];
 
   const fromTerms = (pool, n) => {
     const gens = [G.termToEs, G.esToTerm, G.defToTerm, G.exampleGap];
+    const wgens = [W.typeEn, W.typeEs, W.tilesEn, W.tilesEs, W.gapType];
     for (const t of shuffle(pool)) {
       if (out.length >= n) break;
-      for (const gen of shuffle(gens)) { const q = gen(t, terms); if (q) { tryAdd(q); break; } }
+      // ~30 % de las preguntas de vocabulario son de escribir
+      const order = Math.random() < 0.3 ? [...shuffle(wgens), ...shuffle(gens)] : shuffle(gens);
+      for (const gen of order) { const q = gen(t, terms); if (q) { tryAdd(q); break; } }
+    }
+  };
+  const fromWriting = (pool, n, modes) => {
+    for (const t of shuffle(pool)) {
+      if (out.length >= n) break;
+      const gens = (t.cat === 'phrases' ? ['phraseGap'] : modes.filter((m) => m !== 'phraseGap')).filter((m) => modes.includes(m));
+      for (const m of shuffle(gens)) { const q = W[m](t); if (q) { tryAdd(q); break; } }
     }
   };
   const fromQuestions = (pool, n) => {
@@ -207,7 +368,11 @@ async function buildQuestions(lesson) {
 
   if (lesson.type === 'gloss') {
     const pool = lesson.cat === 'custom' ? terms.filter((t) => t.cat === 'custom') : terms.filter((t) => t.cat === lesson.cat);
+    if (lesson.cat === 'phrases') fromWriting(pool, 4, ['phraseGap']);
     fromTerms(pool, LESSON_SIZE);
+  } else if (lesson.type === 'write') {
+    const pool = lesson.modes.includes('phraseGap') ? terms : terms.filter((t) => t.cat !== 'phrases');
+    fromWriting(pool, LESSON_SIZE, lesson.modes);
   } else if (lesson.type === 'int') {
     fromQuestions(QUESTIONS.filter((q) => q.cat === lesson.cat), LESSON_SIZE);
   } else if (lesson.type === 'fault') {
@@ -397,38 +562,136 @@ async function viewLesson(root, lessonId) {
     if (!queue.length) return finish(true);
     const { q, retry } = queue[0];
     let locked = false;
-
-    const optBtns = q.options.map((opt, i) =>
-      h('button', { class: `opt ${q.optLang === 'en' ? 'en' : ''}`, onclick: () => choose(i) },
-        h('span', { class: 'opt-key' }, String.fromCharCode(65 + i)), h('span', {}, opt))
-    );
+    let hinted = false;
 
     const sayBtn = q.say && !q.sayAfter ? h('button', { class: 'say-btn', 'aria-label': 'Escuchar', onclick: () => speak(q.say) }, '🔊') : null;
-
-    body.replaceChildren(
+    const head = [
       h('div', { class: 'q-kind' }, retry ? '🔁 Repaso' : q.kind || ''),
       h('h2', { class: 'q-prompt' }, q.prompt),
       q.sub ? h('p', { class: 'muted small' }, q.sub) : null,
+      q.listen ? h('button', { class: 'listen-big', onclick: () => speak(q.say) }, '🔊', h('span', {}, 'Escuchar')) : null,
       q.big ? h('div', { class: 'q-big-row' }, sayBtn, h('p', { class: `q-big ${q.small ? 'smaller' : ''}` }, q.big)) : null,
-      q.text ? h('div', { class: 'q-big-row' }, q.big ? null : sayBtn, h('p', { class: 'q-text' }, q.text)) : null,
-      h('div', { class: 'opts' }, ...optBtns),
-    );
+      q.text ? h('div', { class: 'q-big-row' }, q.big || q.listen ? null : sayBtn, h('p', { class: 'q-text' }, q.text)) : null,
+    ];
 
-    async function choose(i) {
+    let interaction;
+    if (q.mode === 'type') interaction = typeUI();
+    else if (q.mode === 'tiles') interaction = tilesUI();
+    else interaction = mcUI();
+
+    body.replaceChildren(...head, ...interaction);
+    if (q.autoSay) speak(q.say);
+
+    // --- Opción múltiple ---
+    function mcUI() {
+      const optBtns = q.options.map((opt, i) =>
+        h('button', { class: `opt ${q.optLang === 'en' ? 'en' : ''}`, onclick: () => {
+          if (locked) return;
+          optBtns.forEach((b, j) => {
+            b.disabled = true;
+            if (j === q.answer) b.classList.add('right');
+            else if (j === i) b.classList.add('wrong');
+          });
+          resolve(i === q.answer);
+        } }, h('span', { class: 'opt-key' }, String.fromCharCode(65 + i)), h('span', {}, opt))
+      );
+      return [h('div', { class: 'opts' }, ...optBtns)];
+    }
+
+    // --- Escribir con pista de letras ---
+    function typeUI() {
+      const reveal = [...q.reveal];
+      const maskEl = h('div', { class: 'mask', 'aria-label': 'Pista de letras' });
+      // Agrupa las casillas por palabra para que una palabra no se parta entre dos líneas.
+      const paintMask = () => {
+        const words = [];
+        let cur = [];
+        [...q.word].forEach((c, i) => {
+          if (c === ' ') { words.push(cur); cur = []; return; }
+          cur.push(h('span', { class: `cell ${reveal[i] ? 'shown' : ''}` }, reveal[i] ? c : ''));
+        });
+        words.push(cur);
+        maskEl.replaceChildren(...words.map((cells) => h('span', { class: 'mword' }, ...cells)));
+      };
+      paintMask();
+      const input = h('input', {
+        class: 'input type-input', type: 'text', autocomplete: 'off', autocorrect: 'off', autocapitalize: 'none', spellcheck: 'false',
+        placeholder: q.lang === 'en' ? 'Write in English…' : 'Escribe en español…', enterkeyhint: 'done',
+      });
+      const checkBtn = h('button', { class: 'btn btn-primary btn-xl', disabled: true }, 'Comprobar');
+      const hintBtn = h('button', { class: 'btn btn-secondary' }, '💡 Pista');
+      input.addEventListener('input', () => { checkBtn.disabled = !input.value.trim(); });
+      input.addEventListener('keydown', (e) => { if (e.key === 'Enter' && input.value.trim()) check(); });
+      hintBtn.onclick = () => {
+        const hidden = reveal.map((r, i) => (!r && q.word[i] !== ' ' ? i : -1)).filter((i) => i >= 0);
+        if (!hidden.length) return;
+        reveal[hidden[0]] = true;
+        hinted = true;
+        paintMask();
+        if (hidden.length === 1) hintBtn.disabled = true;
+        input.focus();
+      };
+      function check() {
+        if (locked) return;
+        const r = checkTyped(input.value, q.answers);
+        input.disabled = true; checkBtn.disabled = true; hintBtn.disabled = true;
+        input.classList.add(r.ok ? 'right' : 'wrong');
+        for (let i = 0; i < reveal.length; i++) reveal[i] = true;
+        paintMask();
+        maskEl.classList.add(r.ok ? 'right' : 'wrong');
+        resolve(r.ok, r.note);
+      }
+      checkBtn.onclick = check;
+      setTimeout(() => input.focus(), 50);
+      return [maskEl, input, h('div', { class: 'btn-row' }, hintBtn), checkBtn];
+    }
+
+    // --- Ordenar letras ---
+    function tilesUI() {
+      const chosen = [];
+      const slots = h('div', { class: 'mask tiles-answer' });
+      const pool = h('div', { class: 'tiles' });
+      const checkBtn = h('button', { class: 'btn btn-primary btn-xl', disabled: true }, 'Comprobar');
+      const tileBtns = q.letters.map((ch, i) => h('button', { class: 'tile-l', onclick: () => {
+        if (locked || tileBtns[i].disabled) return;
+        tileBtns[i].disabled = true;
+        chosen.push(i);
+        paint();
+      } }, ch));
+      const paint = () => {
+        slots.replaceChildren(h('span', { class: 'mword' }, ...q.letters.map((_, k) => {
+          const idx = chosen[k];
+          return h('span', { class: `cell ${idx != null ? 'shown' : ''}` }, idx != null ? q.letters[idx] : '');
+        })));
+        checkBtn.disabled = chosen.length !== q.letters.length;
+      };
+      const undo = h('button', { class: 'btn btn-secondary', onclick: () => {
+        if (locked || !chosen.length) return;
+        tileBtns[chosen.pop()].disabled = false;
+        paint();
+      } }, '⌫ Borrar');
+      pool.replaceChildren(...tileBtns);
+      paint();
+      checkBtn.onclick = () => {
+        if (locked) return;
+        const typed = chosen.map((i) => q.letters[i]).join('');
+        const ok = normKeep(typed) === normKeep(q.word);
+        slots.classList.add(ok ? 'right' : 'wrong');
+        tileBtns.forEach((b) => { b.disabled = true; });
+        resolve(ok);
+      };
+      return [slots, pool, h('div', { class: 'btn-row' }, undo), checkBtn];
+    }
+
+    function resolve(ok, note) {
       if (locked) return;
       locked = true;
-      const ok = i === q.answer;
-      optBtns.forEach((b, j) => {
-        b.disabled = true;
-        if (j === q.answer) b.classList.add('right');
-        else if (j === i) b.classList.add('wrong');
-      });
       queue.shift();
       if (ok) {
         correct++;
         if (!retry) { firstTry++; answered++; }
         combo++;
-        xp += 10 + (combo >= 5 ? 5 : 0);
+        xp += (hinted ? 5 : 10) + (combo >= 5 ? 5 : 0);
         sfx('ok');
       } else {
         combo = 0;
@@ -446,6 +709,7 @@ async function viewLesson(root, lessonId) {
           h('strong', {}, ok ? `⚡ ${pick(msgs)}${combo >= 5 ? ` · combo ×${combo}` : ''}` : '✖ Incorrecto'),
           q.say ? h('button', { class: 'say-btn small', 'aria-label': 'Escuchar', onclick: () => speak(q.say) }, '🔊') : null,
         ),
+        note ? h('p', {}, note) : null,
         ok ? null : h('p', {}, 'Respuesta correcta: ', h('b', {}, q.correctText)),
         h('button', { class: `btn btn-xl ${ok ? 'btn-ok' : 'btn-danger-solid'}`, onclick: () => {
           stop();

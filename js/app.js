@@ -14,10 +14,10 @@ import { TERMS } from './data/glossary.js';
 import { FAULTS } from './data/faults.js';
 import { DIAGRAMS } from './data/diagrams.js';
 
-const APP_VERSION = '2.0.0';
+const APP_VERSION = '2.2.0';
 
 const MODULES = [
-  { key: 'juego', icon: '🎮', title: 'Juego', desc: 'Lecciones de opción múltiple', cls: 'tile-game' },
+  { key: 'juego', icon: '🎮', title: 'Juego', desc: 'Opción múltiple, escribir y completar', cls: 'tile-game' },
   { key: 'entrevistas', icon: '🎤', title: 'Entrevistas', desc: `${QUESTIONS.length} preguntas técnicas`, cls: 'tile-int' },
   { key: 'glosario', icon: '📖', title: 'Glosario', desc: `${TERMS.length} términos EN ↔ ES`, cls: 'tile-gloss' },
   { key: 'fallas', icon: '🔧', title: 'Fallas', desc: `${FAULTS.length} casos de diagnóstico`, cls: 'tile-fault' },

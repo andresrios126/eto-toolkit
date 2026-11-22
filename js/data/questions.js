@@ -3,6 +3,7 @@
 // Las respuestas editadas por el usuario se guardan en IndexedDB y NO modifican este archivo.
 
 import { EXTRA_CATEGORIES, EXTRA_QUESTIONS, KP_BASE } from './questions-extra.js';
+import { CV_CATEGORIES, CV_QUESTIONS } from './questions-cv.js';
 
 export const CATEGORIES = {
   dp: 'DP System',
@@ -14,6 +15,7 @@ export const CATEGORIES = {
   loto: 'LOTO',
   personal: 'Experiencia personal',
   ...EXTRA_CATEGORIES,
+  ...CV_CATEGORIES,
 };
 
 const BASE_QUESTIONS = [
@@ -275,7 +277,7 @@ const BASE_QUESTIONS = [
 ];
 
 // Orden: base + adicionales, agrupadas por categoría en el orden de CATEGORIES.
-const ALL = [...BASE_QUESTIONS.map((q) => ({ ...q, kp: KP_BASE[q.id] || [] })), ...EXTRA_QUESTIONS];
+const ALL = [...BASE_QUESTIONS.map((q) => ({ ...q, kp: KP_BASE[q.id] || [] })), ...EXTRA_QUESTIONS, ...CV_QUESTIONS];
 const ORDER = Object.keys(CATEGORIES);
 export const QUESTIONS = ALL
   .map((q, i) => ({ q, i }))
