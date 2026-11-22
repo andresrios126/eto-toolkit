@@ -354,6 +354,8 @@ p { margin: 0 0 10px; }
 .tile-gloss { --tile-tint: rgba(62, 207, 142, .2); border-color: rgba(62, 207, 142, .45); }
 .tile-fault { --tile-tint: rgba(255, 93, 93, .18); border-color: rgba(255, 93, 93, .45); }
 .tile-guide { --tile-tint: rgba(150, 110, 255, .18); border-color: rgba(150, 110, 255, .45); }
+.tile-mock { --tile-tint: rgba(255, 138, 61, .2); border-color: rgba(255, 138, 61, .45); }
+.tile-eng { --tile-tint: rgba(220, 60, 90, .16); border-color: rgba(220, 60, 90, .4); }
 .tile-set { --tile-tint: rgba(130, 140, 160, .2); border-color: rgba(130, 140, 160, .45); }
 .set-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 48px; }
 .switch {
@@ -583,5 +585,50 @@ p { margin: 0 0 10px; }
 .swatch { width: 44px; height: 44px; border-radius: 50%; border: 3px solid var(--border); cursor: pointer; }
 .swatch.active { border-color: var(--accent); box-shadow: 0 0 0 3px var(--surface), 0 0 0 5px var(--accent); }
 .color-input { width: 100%; height: 56px; border: 1px solid var(--border); border-radius: 14px; background: var(--surface); padding: 4px; }
+
+/* ---------- Simulacro ---------- */
+.block { display: block; }
+.mock-intro { align-items: center; text-align: center; }
+.interviewer {
+  width: 72px; height: 72px; border-radius: 50%; display: grid; place-items: center; font-size: 38px;
+  background: var(--surface-2); border: 2px solid var(--border);
+}
+.interviewer.small { width: 48px; height: 48px; font-size: 26px; }
+.bubble {
+  position: relative; padding: 14px 16px; border-radius: 16px; background: var(--surface-2);
+  border: 1px solid var(--border); min-height: 56px;
+}
+.bubble-text { margin: 0; font-size: 20px; font-weight: 700; line-height: 1.4; }
+.answer-zone { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.small-ring { width: 150px; height: 150px; }
+.small-ring .timer-text { font-size: 38px; }
+.rec { color: var(--danger); font-weight: 800; font-size: 14px; animation: pulse 1s infinite; }
+.rec-audio { width: 100%; }
+.hist { gap: 2px; }
+.model { display: flex; flex-direction: column; gap: 8px; }
+
+/* ---------- Inglés ---------- */
+.eng-hero { background: linear-gradient(135deg, #e0405f, #8a3ffc); color: #fff; box-shadow: 0 5px 0 #5b1fb0, 0 0 30px rgba(138, 63, 252, .25); }
+.eng-hero .hero-text small { opacity: .85; }
+.eng-hero .hero-go { background: #fff; color: #8a3ffc; }
+.eng-bar { background: linear-gradient(90deg, #e0405f, #8a3ffc); }
+.eng-lvl b { color: #8a3ffc; }
+.heart { color: #e0405f; font-size: 22px; transition: all .3s; }
+.heart.blown { color: var(--border); transform: scale(.8); }
+.en-cell { font-weight: 600; }
+.form-table th { width: 32%; white-space: nowrap; }
+.example-row { display: flex; align-items: flex-start; gap: 10px; padding: 6px 0; border-bottom: 1px solid var(--border); }
+.example-row:last-child { border-bottom: 0; }
+.ex-en { margin: 0; font-weight: 600; font-size: 17px; }
+.ex-es { margin: 2px 0 0; }
+.mistake { display: flex; flex-direction: column; gap: 2px; margin: 0 0 8px; }
+.mistake .bad { color: var(--danger); text-decoration: line-through; }
+.mistake .good { color: var(--ok-ink); font-weight: 700; }
+.rule { margin-bottom: 8px; }
+.rule p { margin: 2px 0 0; }
+.table-card { padding: 6px; overflow-x: auto; }
+.verbs td, .verbs th { font-size: 14px; }
+.verbs tbody tr { cursor: pointer; }
+.verbs tbody tr:active { background: var(--surface-2); }
 
 [hidden] { display: none !important; }

@@ -7,9 +7,11 @@ Aplicación web progresiva (PWA) en español para **Electro-Technical Officers**
 | Módulo | Qué tiene |
 |---|---|
 | 🎮 **Juego** | Opción múltiple, escribir y completar palabras, ordenar letras y dictado, con XP, racha y niveles de voltaje |
+| 🎙️ **Simulacro** | Entrevista completa: el entrevistador lee las preguntas en voz alta, respondes con tiempo y (opcional) te grabas |
 | 🎤 **Entrevistas** | 91 preguntas técnicas, incluidas las de mis equipos y sistemas con respuesta modelo EN/ES, puntos clave, voz y práctica de 2 min |
 | 📖 **Glosario** | 302 términos técnicos EN ↔ ES con definición, ejemplo, voz y tarjetas |
 | 🔧 **Fallas** | 21 casos de troubleshooting + tus propios casos |
+| 🇬🇧 **Inglés** | Sub-app independiente: 17 temas de gramática (12 tiempos verbales, going to, used to, modales, voz pasiva, condicionales) y 89 verbos irregulares |
 | 🧭 **Guía visual** | 15 diagramas de referencia: DP, redundancia, voltajes, VFD, thrusters, radar, LOTO… |
 
 ### 🎮 Juego (estilo app de idiomas, con tema eléctrico)
@@ -21,6 +23,20 @@ Aplicación web progresiva (PWA) en español para **Electro-Technical Officers**
 - **Niveles con nombre de voltaje**: 24 V → 110 V → 230 V → 440 V → 690 V → 3.3 kV → 6.6 kV → 11 kV → 33 kV → 132 kV.
 - **Repaso mixto** y **"Lo que no sé"** (términos que aún no marcaste como aprendidos).
 - Sonidos de acierto/error (se pueden silenciar).
+
+### 🎙️ Simulacro de entrevista
+- Eliges duración (5, 8 o 10 preguntas) y tiempo por respuesta (1, 2 o 3 min).
+- Orden realista: presentación → técnicas (DP, tus equipos, potencia) → seguridad → cierre ("Do you have any questions for us?").
+- El entrevistador lee cada pregunta en voz alta; puedes ocultar el texto para practicar solo escuchando.
+- **Grabar mis respuestas** (opcional): te escuchas al final. Las grabaciones no se guardan.
+- Al terminar te autoevalúas (😟 / 🙂 / 😎), ves la respuesta modelo y los puntos clave, y queda un historial.
+
+### 🇬🇧 Inglés (sub-app independiente)
+- Su propio progreso: XP y nivel **A1 → C2**, separado del progreso ETO.
+- **17 temas**: Present simple / continuous / perfect / perfect continuous, Past simple / continuous / perfect / perfect continuous, Future will / going to / continuous / perfect / perfect continuous, used to, modales, voz pasiva y condicionales.
+- Cada tema: cuándo se usa, estructura (afirmativa, negativa, pregunta), palabras clave, ejemplos con voz y traducción, errores comunes y **10 ejercicios** (escribir el verbo, elegir la forma correcta, identificar el tiempo, traducir).
+- **Verbos**: formas del verbo (base, pasado, participio, -ing), **89 irregulares** con tabla, búsqueda y voz, y **verbos regulares** con reglas de -ed y pronunciación /t/ /d/ /ɪd/.
+- Práctica mixta y "¿Qué tiempo es?". Las respuestas escritas se corrigen de forma estricta (por ejemplo, "work" no vale por "works").
 
 ### 🎤 Entrenador de entrevistas
 
@@ -110,10 +126,13 @@ js/modules/interviews.js  Entrevistas
 js/modules/glossary.js  Glosario y tarjetas
 js/modules/faults.js    Casos de fallas
 js/modules/guide.js     Guía visual
+js/modules/mock.js      Simulacro de entrevista
+js/modules/english.js   Sub-app de inglés
 js/data/questions*.js   Preguntas, respuestas modelo y puntos clave
 js/data/glossary*.js    Términos del glosario
 js/data/faults.js       Casos de fallas
 js/data/diagrams.js     Diagramas SVG
+js/data/english.js      Gramática, ejercicios y verbos de inglés
 icons/                  Íconos de la app
 ```
 

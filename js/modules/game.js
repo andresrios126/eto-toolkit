@@ -13,7 +13,7 @@ const LIVES = 3;
 
 // ---------- Utilidades ----------
 
-const shuffle = (arr) => {
+export const shuffle = (arr) => {
   const a = [...arr];
   for (let i = a.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
@@ -21,7 +21,7 @@ const shuffle = (arr) => {
   }
   return a;
 };
-const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
+export const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
 const base = (en) => en.replace(/\s*\(.*?\)\s*/g, ' ').split(' / ')[0].trim();
 const escRe = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
@@ -38,7 +38,7 @@ function distractors(correct, near, far, n = 3) {
   return out;
 }
 
-function mc(prompt, correct, wrong, extra = {}) {
+export function mc(prompt, correct, wrong, extra = {}) {
   const options = shuffle([correct, ...wrong]);
   return { prompt, options, answer: options.indexOf(correct), correctText: correct, ...extra };
 }
@@ -131,7 +131,7 @@ const G = {
 // ---------- Juegos de escritura (completar, ordenar letras, dictado) ----------
 
 const stripAccents = (x) => x.normalize('NFD').replace(/[̀-ͯ]/g, '');
-const normKeep = (x) => x.toLowerCase().replace(/[-’'.,!?¿¡]/g, ' ').replace(/\s+/g, ' ').trim();
+const normKeep = (x) => x.toLowerCase().replace(/[’']/g, '').replace(/[-/.,!?¿¡]/g, ' ').replace(/\s+/g, ' ').trim();
 const normLoose = (x) => stripAccents(normKeep(x));
 
 function lev(a, b) {
@@ -147,11 +147,12 @@ function lev(a, b) {
 }
 
 // Compara lo escrito con las respuestas aceptadas. Devuelve { ok, note }.
-export function checkTyped(given, answers) {
+export function checkTyped(given, answers, strict = false) {
   const g = normKeep(given);
   if (!g) return { ok: false };
   for (const a of answers) if (normKeep(a) === g) return { ok: true };
   for (const a of answers) if (normLoose(a) === normLoose(g)) return { ok: true, note: `Cuidado con los acentos: ${a}` };
+  if (strict) return { ok: false };
   for (const a of answers) {
     const A = normLoose(a), G2 = normLoose(g);
     const tol = A.length >= 10 ? 2 : A.length >= 5 ? 1 : 0;
@@ -183,9 +184,9 @@ function altsEs(t) {
 const primary = (alts) => [...alts].sort((a, b) => b.length - a.length).find((x) => x.length <= 28) || alts[0];
 
 // Revela la primera letra de cada palabra y ~30 % de las demás.
-function makeMask(word) {
+export function makeMask(word) {
   const chars = [...word];
-  const reveal = chars.map((c, i) => c === ' ' || c === '-' || i === 0 || chars[i - 1] === ' ' || chars[i - 1] === '-');
+  const reveal = chars.map((c, i) => c === ' ' || c === '-' || c === "'" || i === 0 || chars[i - 1] === ' ' || chars[i - 1] === '-');
   const letters = chars.map((c, i) => (!reveal[i] ? i : -1)).filter((i) => i >= 0);
   shuffle(letters).slice(0, Math.floor(letters.length * 0.3)).forEach((i) => { reveal[i] = true; });
   return reveal;
@@ -509,11 +510,41 @@ async function viewLesson(root, lessonId) {
     : ALL_LESSONS.find((l) => l.id === lessonId);
   if (!lesson) { location.hash = '#/juego'; return; }
   setHeader(lesson.title, '#/juego');
+  return runLesson(root, {
+    title: lesson.title,
+    backHash: '#/juego',
+    backLabel: '🗺️ Volver al camino',
+    build: () => buildQuestions(lesson),
+    record: async (r) => {
+      const { game, stars } = await recordLesson(lesson.id, r);
+      return { stars, third: [`🔥 ${game.streak}`, 'racha'], after: dailyGoal(game) };
+    },
+  });
+}
 
-  const questions = await buildQuestions(lesson);
+// Estilos de lección: "eto" (fusibles, tema eléctrico) o "eng" (corazones, sub-app de inglés).
+const FLAVORS = {
+  eto: {
+    life: '▮', lifeClass: 'fuse', lifeName: 'fusibles',
+    msgs: ['¡Correcto!', '¡Excelente!', '¡Bien conectado!', '¡Voltaje perfecto!', '¡Sigue así!'],
+    perfect: '¡Circuito perfecto!', fail: 'Se quemaron los fusibles', failHeader: 'Fusible quemado', icon: '⚡', failIcon: '💥',
+  },
+  eng: {
+    life: '♥', lifeClass: 'heart', lifeName: 'vidas',
+    msgs: ['¡Correcto!', 'Great job!', 'Well done!', '¡Perfecto!', 'Excellent!'],
+    perfect: 'Perfect score!', fail: 'Te quedaste sin vidas', failHeader: 'Sin vidas', icon: '⭐', failIcon: '💔',
+  },
+};
+
+// Motor genérico de lecciones (opción múltiple, escribir, ordenar letras).
+// opts: { title, backHash, backLabel, build(), record({xp,correct,total,completed}) → {stars, third, after}, flavor }
+export async function runLesson(root, opts) {
+  const F = FLAVORS[opts.flavor || 'eto'];
+  const lessonTitle = opts.title;
+  const questions = await opts.build();
   if (questions.length < 3) {
     root.replaceChildren(h('section', { class: 'card center' }, h('p', {}, 'No hay suficiente contenido para esta lección todavía.')),
-      h('a', { class: 'btn btn-secondary', href: '#/juego' }, '← Volver'));
+      h('a', { class: 'btn btn-secondary', href: opts.backHash }, '← Volver'));
     return;
   }
 
@@ -533,34 +564,35 @@ async function viewLesson(root, lessonId) {
 
   const paintHeader = () => {
     header.replaceChildren(
-      h('a', { class: 'x-btn', href: '#/juego', 'aria-label': 'Salir' }, '✕'),
+      h('a', { class: 'x-btn', href: opts.backHash, 'aria-label': 'Salir' }, '✕'),
       h('div', { class: 'progress grow' }, h('div', { class: 'progress-bar volt', style: `width:${(answered / total) * 100}%` })),
-      h('span', { class: 'fuses', 'aria-label': `${lives} fusibles` },
-        ...Array.from({ length: LIVES }, (_, i) => h('span', { class: `fuse ${i < lives ? '' : 'blown'}` }, '▮'))),
+      h('span', { class: 'fuses', 'aria-label': `${lives} ${F.lifeName}` },
+        ...Array.from({ length: LIVES }, (_, i) => h('span', { class: `${F.lifeClass} ${i < lives ? '' : 'blown'}` }, F.life))),
     );
   };
 
   const finish = async (completed) => {
     stop();
     if (completed && firstTry === total) xp += 20; // bonus perfecto
-    const { game, stars } = await recordLesson(lesson.id, { xp, correct: firstTry, total, completed });
+    const res = await opts.record({ xp, correct: firstTry, total, completed });
+    const stars = res.stars;
     if (completed) sfx('win');
-    setHeader(completed ? '¡Lección completa!' : 'Fusible quemado', '#/juego');
+    setHeader(completed ? '¡Lección completa!' : F.failHeader, opts.backHash);
     const acc = Math.round((firstTry / total) * 100);
     root.replaceChildren(
       h('section', { class: 'card center result' },
-        h('div', { class: 'result-icon' }, completed ? (stars === 3 ? '🏆' : '⚡') : '💥'),
-        h('h2', {}, completed ? (stars === 3 ? '¡Circuito perfecto!' : '¡Bien hecho!') : 'Se quemaron los fusibles'),
+        h('div', { class: 'result-icon' }, completed ? (stars === 3 ? '🏆' : F.icon) : F.failIcon),
+        h('h2', {}, completed ? (stars === 3 ? F.perfect : '¡Bien hecho!') : F.fail),
         completed ? h('div', { class: 'stars big' }, '★'.repeat(stars) + '☆'.repeat(3 - stars)) : h('p', { class: 'muted' }, 'Repasa y vuelve a intentarlo.'),
         h('div', { class: 'result-stats' },
           h('div', {}, h('b', {}, `+${xp}`), h('span', {}, 'XP')),
           h('div', {}, h('b', {}, `${acc}%`), h('span', {}, 'precisión')),
-          h('div', {}, h('b', {}, `🔥 ${game.streak}`), h('span', {}, 'racha')),
+          res.third ? h('div', {}, h('b', {}, res.third[0]), h('span', {}, res.third[1])) : null,
         ),
       ),
-      dailyGoal(game),
-      h('a', { class: 'btn btn-primary btn-xl', href: '#/juego/leccion/' + (lessonId), onclick: (e) => { e.preventDefault(); viewLesson(root, lessonId); } }, '🔁 Otra vez'),
-      h('a', { class: 'btn btn-secondary btn-xl', href: '#/juego' }, '🗺️ Volver al camino'),
+      res.after || null,
+      h('button', { class: 'btn btn-primary btn-xl', onclick: () => { setHeader(lessonTitle, opts.backHash); runLesson(root, opts); window.scrollTo(0, 0); } }, '🔁 Otra vez'),
+      h('a', { class: 'btn btn-secondary btn-xl', href: opts.backHash }, opts.backLabel || '← Volver'),
     );
   };
 
@@ -641,7 +673,7 @@ async function viewLesson(root, lessonId) {
       };
       function check() {
         if (locked) return;
-        const r = checkTyped(input.value, q.answers);
+        const r = checkTyped(input.value, q.answers, q.strict);
         input.disabled = true; checkBtn.disabled = true; hintBtn.disabled = true;
         input.classList.add(r.ok ? 'right' : 'wrong');
         for (let i = 0; i < reveal.length; i++) reveal[i] = true;
@@ -710,7 +742,7 @@ async function viewLesson(root, lessonId) {
       }
       paintHeader();
 
-      const msgs = ['¡Correcto!', '¡Excelente!', '¡Bien conectado!', '¡Voltaje perfecto!', '¡Sigue así!'];
+      const msgs = F.msgs;
       sheet.className = `sheet ${ok ? 'ok' : 'bad'}`;
       sheet.replaceChildren(
         h('div', { class: 'sheet-head' },

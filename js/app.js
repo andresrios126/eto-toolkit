@@ -10,20 +10,24 @@ import { glossaryRoute } from './modules/glossary.js';
 import { gameRoute, statsBar, dailyGoal, nextLesson } from './modules/game.js';
 import { faultsRoute } from './modules/faults.js';
 import { guideRoute } from './modules/guide.js';
+import { mockRoute } from './modules/mock.js';
+import { englishRoute } from './modules/english.js';
 import { getGame } from './game-state.js';
 import { QUESTIONS } from './data/questions.js';
 import { TERMS } from './data/glossary.js';
 import { FAULTS } from './data/faults.js';
 import { DIAGRAMS } from './data/diagrams.js';
 
-const APP_VERSION = '2.4.2';
+const APP_VERSION = '3.0.0';
 
 const MODULES = [
   { key: 'juego', icon: '🎮', title: 'Juego', desc: 'Opción múltiple y escritura', cls: 'tile-game' },
   { key: 'entrevistas', icon: '🎤', title: 'Entrevistas', desc: `${QUESTIONS.length} preguntas técnicas`, cls: 'tile-int' },
+  { key: 'simulacro', icon: '🎙️', title: 'Simulacro', desc: 'Entrevista completa con tiempo', cls: 'tile-mock' },
   { key: 'glosario', icon: '📖', title: 'Glosario', desc: `${TERMS.length} términos EN ↔ ES`, cls: 'tile-gloss' },
   { key: 'fallas', icon: '🔧', title: 'Fallas', desc: `${FAULTS.length} casos de diagnóstico`, cls: 'tile-fault' },
   { key: 'guia', icon: '🧭', title: 'Guía visual', desc: `${DIAGRAMS.length} diagramas de referencia`, cls: 'tile-guide' },
+  { key: 'ingles', icon: '🇬🇧', title: 'Inglés', desc: 'Tiempos verbales y verbos', cls: 'tile-eng' },
   { key: 'ajustes', icon: '⚙️', title: 'Ajustes', desc: 'Tema, voz, sonido y respaldo', cls: 'tile-set' },
 ];
 
@@ -228,6 +232,8 @@ async function route() {
     else if (mod === 'juego') cleanup = await gameRoute(root, rest);
     else if (mod === 'fallas') cleanup = await faultsRoute(root, rest);
     else if (mod === 'guia') cleanup = await guideRoute(root, rest);
+    else if (mod === 'simulacro') cleanup = await mockRoute(root, rest);
+    else if (mod === 'ingles') cleanup = await englishRoute(root, rest);
     else if (mod === 'respaldo') viewBackup();
     else if (mod === 'ajustes' || mod === 'apariencia') viewSettings();
     else { location.hash = '#/'; return; }
