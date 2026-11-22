@@ -1,6 +1,7 @@
 // Punto de entrada: router por hash, menú de inicio, respaldo y registro del service worker.
 
-import { exportBackup, importBackup, requestPersistence } from './db.js';
+import { exportBackup, importBackup, requestPersistence, getSetting } from './db.js';
+import { THEMES, CUSTOM_SWATCHES, applyTheme, currentTheme, saveTheme, themeVars, DEFAULT_THEME } from './themes.js';
 import { initSpeech, stop as stopSpeech } from './speech.js';
 import { h, toast, setHeader } from './ui.js';
 import { interviewsRoute } from './modules/interviews.js';
@@ -14,7 +15,7 @@ import { TERMS } from './data/glossary.js';
 import { FAULTS } from './data/faults.js';
 import { DIAGRAMS } from './data/diagrams.js';
 
-const APP_VERSION = '2.2.0';
+const APP_VERSION = '2.3.0';
 
 const MODULES = [
   { key: 'juego', icon: '🎮', title: 'Juego', desc: 'Opción múltiple, escribir y completar', cls: 'tile-game' },
@@ -51,8 +52,65 @@ async function viewHome() {
         )
       ),
     ),
-    h('a', { class: 'btn btn-ghost', href: '#/respaldo' }, '💾 Respaldo de datos'),
+    h('div', { class: 'btn-row' },
+      h('a', { class: 'btn btn-secondary', href: '#/apariencia' }, '🎨 Apariencia'),
+      h('a', { class: 'btn btn-secondary', href: '#/respaldo' }, '💾 Respaldo'),
+    ),
     h('p', { class: 'muted center small' }, `v${APP_VERSION} · Los datos se guardan solo en este dispositivo.`),
+  );
+}
+
+function viewAppearance() {
+  setHeader('Apariencia', '#/');
+  let choice = currentTheme();
+
+  const preview = (vars) => h('div', { class: 'theme-prev', style: `background:${vars['--bg']}` },
+    h('div', { class: 'p-card', style: `background:${vars['--surface']};border:1px solid ${vars['--border']}` }),
+    h('div', { class: 'p-row' },
+      h('div', { class: 'p-btn', style: `background:${vars['--primary']}` }),
+      h('div', { class: 'p-btn', style: `background:${vars['--accent']}` }),
+      h('div', { class: 'p-btn', style: `background:${vars['--surface-2']};border:1px solid ${vars['--border']}` }),
+    ),
+  );
+
+  const grid = h('div', { class: 'theme-grid' });
+  const colorInput = h('input', { type: 'color', class: 'color-input', 'aria-label': 'Color de fondo personalizado' });
+  const swatches = h('div', { class: 'swatches' });
+
+  const pick = async (c) => {
+    choice = c;
+    await saveTheme(c);
+    render();
+  };
+
+  const render = () => {
+    grid.replaceChildren(...THEMES.map((t) => h('button', {
+      class: `theme-card ${choice.id === t.id ? 'active' : ''}`,
+      onclick: () => pick({ id: t.id }),
+    }, preview(themeVars({ id: t.id })), h('strong', {}, `${choice.id === t.id ? '✓ ' : ''}${t.name}`),
+      h('span', { class: 'muted small' }, t.light ? 'Fondo claro' : 'Fondo oscuro'))));
+    colorInput.value = choice.id === 'custom' ? choice.color : '#ffffff';
+    swatches.replaceChildren(...CUSTOM_SWATCHES.map((c) => h('button', {
+      class: `swatch ${choice.id === 'custom' && choice.color === c ? 'active' : ''}`,
+      style: `background:${c}`, 'aria-label': `Color ${c}`,
+      onclick: () => pick({ id: 'custom', color: c }),
+    })));
+  };
+  colorInput.addEventListener('input', () => { applyTheme({ id: 'custom', color: colorInput.value }); });
+  colorInput.addEventListener('change', () => pick({ id: 'custom', color: colorInput.value }));
+  render();
+
+  root.replaceChildren(
+    h('h2', { class: 'label' }, '🎨 Temas'),
+    grid,
+    h('section', { class: 'card' },
+      h('h2', {}, '🖌️ Color de fondo personalizado'),
+      h('p', { class: 'muted small' }, 'Elige un color: la app ajusta automáticamente tarjetas, bordes y textos para que se lean bien, en claro u oscuro.'),
+      swatches,
+      h('label', { class: 'label' }, 'O elige cualquier color (toca el recuadro):'),
+      colorInput,
+    ),
+    h('a', { class: 'btn btn-secondary', href: '#/' }, '← Volver al inicio'),
   );
 }
 
@@ -93,6 +151,7 @@ function viewBackup() {
       const json = JSON.parse(await f.text());
       if (!confirm('Importar este respaldo reemplazará TODOS los datos actuales. ¿Continuar?')) return;
       await importBackup(json);
+      applyTheme((await getSetting('theme', null)) || currentTheme());
       toast('✅ Respaldo importado');
     } catch (e) {
       alert(`No se pudo importar: ${e.message}`);
@@ -131,6 +190,7 @@ async function route() {
     else if (mod === 'fallas') cleanup = await faultsRoute(root, rest);
     else if (mod === 'guia') cleanup = await guideRoute(root, rest);
     else if (mod === 'respaldo') viewBackup();
+    else if (mod === 'apariencia') viewAppearance();
     else { location.hash = '#/'; return; }
   } catch (e) {
     console.error(e);
@@ -140,6 +200,10 @@ async function route() {
 }
 
 async function start() {
+  // Tema: localStorage (rápido) o, si no existe, el guardado en la base de datos.
+  let saved = null;
+  try { saved = JSON.parse(localStorage.getItem('eto-theme')); } catch (_) { /* nada */ }
+  applyTheme(saved || (await getSetting('theme', null)) || DEFAULT_THEME);
   await initSpeech();
   requestPersistence();
   window.addEventListener('hashchange', route);

@@ -5,8 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>ETO Toolkit</title>
   <meta name="description" content="Herramientas para Electro-Technical Officers offshore: entrenador de entrevistas en inglés.">
-  <meta name="theme-color" content="#0b1220">
-  <meta name="color-scheme" content="dark">
+  <meta name="theme-color" content="#f4f6fa">
+  <meta name="color-scheme" content="light dark">
   <!-- iOS: pantalla de inicio -->
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="mobile-web-app-capable" content="yes">
@@ -16,6 +16,13 @@
   <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="stylesheet" href="css/styles.css">
+  <script>
+    // Aplica el tema guardado antes de pintar la página (evita un destello de otro color).
+    try {
+      var v = JSON.parse(localStorage.getItem('eto-theme-vars'));
+      if (v) for (var k in v) document.documentElement.style.setProperty(k, v[k]);
+    } catch (e) {}
+  </script>
 </head>
 <body>
   <header class="topbar">

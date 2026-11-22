@@ -650,7 +650,7 @@ async function viewLesson(root, lessonId) {
     function tilesUI() {
       const chosen = [];
       const slots = h('div', { class: 'mask tiles-answer' });
-      const pool = h('div', { class: 'tiles' });
+      const pool = h('div', { class: 'ltiles' });
       const checkBtn = h('button', { class: 'btn btn-primary btn-xl', disabled: true }, 'Comprobar');
       const tileBtns = q.letters.map((ch, i) => h('button', { class: 'tile-l', onclick: () => {
         if (locked || tileBtns[i].disabled) return;

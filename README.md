@@ -42,6 +42,10 @@ Aplicación web progresiva (PWA) en español para **Electro-Technical Officers**
 ### 🧭 Guía visual
 Diagramas dibujados en la app (funcionan sin internet): visión general DP, redundancia DP2 con cuadro dividido, clases DP, referencias de posición, niveles de alerta, diagrama unifilar, tipos de voltaje, estrella/triángulo, sincronización, VFD, tipos de propulsores, lazo 4-20 mA, radar, LOTO y tabla de sensores. Cada uno con explicación en español y términos clave para escuchar en inglés.
 
+### 🎨 Apariencia
+- En **Inicio → 🎨 Apariencia** eliges el tema: **Claro** (predeterminado), **Arena**, **Menta**, **Cielo**, **Lavanda**, **Grafito** o **Noche eléctrica**.
+- **Color de fondo personalizado**: elige un color de la paleta o cualquier color; la app ajusta tarjetas, bordes y textos automáticamente para que se lean bien.
+
 ### 💾 Datos y respaldo
 - Todo se guarda **solo en tu dispositivo** (IndexedDB). No hay servidor ni cuenta.
 - El respaldo incluye respuestas editadas, progreso del juego y del glosario, términos y casos propios.
@@ -92,12 +96,13 @@ HTML, CSS y JavaScript puros (módulos ES), sin frameworks ni paso de compilaci�
 index.html              Estructura y metadatos PWA/iOS
 manifest.webmanifest    Manifiesto de la PWA
 sw.js                   Service worker (caché offline)
-css/styles.css          Estilos mobile-first, modo oscuro
+css/styles.css          Estilos mobile-first con variables de tema
 js/app.js               Router, menú de inicio, respaldo
 js/db.js                IndexedDB + exportar/importar JSON
 js/speech.js            speechSynthesis (voz y velocidad)
 js/ui.js                Utilidades de interfaz
 js/components.js        Componentes compartidos (voz, velocidad)
+js/themes.js            Temas de color y color personalizado
 js/game-state.js        XP, racha, meta diaria y niveles
 js/modules/game.js      Juego de opción múltiple
 js/modules/interviews.js  Entrevistas
