@@ -52,3 +52,15 @@ export function formatTime(sec) {
   const s = sec % 60;
   return `${m}:${String(s).padStart(2, '0')}`;
 }
+
+// Bandera del Reino Unido dibujada en SVG (Windows no muestra emojis de banderas: escribe "GB").
+export const UK_FLAG = `<svg class="flag" viewBox="0 0 60 30" role="img" aria-label="UK flag">
+  <clipPath id="ukc"><rect width="60" height="30"/></clipPath>
+  <g clip-path="url(#ukc)">
+    <rect width="60" height="30" fill="#012169"/>
+    <path d="M0,0 L60,30 M60,0 L0,30" stroke="#fff" stroke-width="6"/>
+    <path d="M0,0 L60,30 M60,0 L0,30" stroke="#C8102E" stroke-width="2.4"/>
+    <path d="M30,0 V30 M0,15 H60" stroke="#fff" stroke-width="10"/>
+    <path d="M30,0 V30 M0,15 H60" stroke="#C8102E" stroke-width="6"/>
+  </g>
+</svg>`;

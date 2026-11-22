@@ -7,7 +7,7 @@ import { initCloud, cloudConfigured, getSession, getStatus, signIn, signUp, sign
 import { APP_ICONS, iconPath, currentIcon, applyIcon, installUrl } from './icons.js';
 import { THEMES, CUSTOM_SWATCHES, applyTheme, currentTheme, saveTheme, themeVars, DEFAULT_THEME } from './themes.js';
 import { initSpeech, stop as stopSpeech } from './speech.js';
-import { h, toast, setHeader } from './ui.js';
+import { h, toast, setHeader, UK_FLAG } from './ui.js';
 import { interviewsRoute } from './modules/interviews.js';
 import { glossaryRoute } from './modules/glossary.js';
 import { gameRoute, statsBar, dailyGoal, nextLesson } from './modules/game.js';
@@ -21,7 +21,7 @@ import { TERMS } from './data/glossary.js';
 import { FAULTS } from './data/faults.js';
 import { DIAGRAMS } from './data/diagrams.js';
 
-const APP_VERSION = '3.5.0';
+const APP_VERSION = '3.5.1';
 
 const MODULES = [
   { key: 'juego', icon: '🎮', title: 'Juego', desc: 'Opción múltiple y escritura', cls: 'tile-game' },
@@ -30,7 +30,7 @@ const MODULES = [
   { key: 'glosario', icon: '📖', title: 'Glosario', desc: `${TERMS.length} términos EN ↔ ES`, cls: 'tile-gloss' },
   { key: 'fallas', icon: '🔧', title: 'Fallas', desc: `${FAULTS.length} casos de diagnóstico`, cls: 'tile-fault' },
   { key: 'guia', icon: '🧭', title: 'Guía visual', desc: `${DIAGRAMS.length} diagramas de referencia`, cls: 'tile-guide' },
-  { key: 'ingles', icon: '🇬🇧', title: 'Inglés', desc: 'Tiempos verbales y verbos', cls: 'tile-eng' },
+  { key: 'ingles', icon: '', svg: UK_FLAG, title: 'Inglés', desc: 'Tiempos verbales y verbos', cls: 'tile-eng' },
 ];
 
 const root = document.getElementById('app');
@@ -54,7 +54,7 @@ async function viewHome() {
     h('nav', { class: 'tiles' },
       ...MODULES.map((m) =>
         h('a', { class: `tile ${m.cls}`, href: `#/${m.key}` },
-          h('span', { class: 'tile-icon', 'aria-hidden': 'true' }, m.icon),
+          m.svg ? h('span', { class: 'tile-icon', 'aria-hidden': 'true', html: m.svg }) : h('span', { class: 'tile-icon', 'aria-hidden': 'true' }, m.icon),
           h('strong', {}, m.title),
           h('small', {}, m.desc),
         )

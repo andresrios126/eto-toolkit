@@ -4,7 +4,7 @@
 import { TENSES, TENSE_GROUPS, IRREGULAR, REGULAR, REGULAR_RULES, ED_SOUNDS, VERB_FORMS, ES_FORMS } from '../data/english.js';
 import { getSetting, setSetting } from '../db.js';
 import { speak } from '../speech.js';
-import { h, toast, setHeader } from '../ui.js';
+import { h, toast, setHeader, UK_FLAG } from '../ui.js';
 import { rateControl } from '../components.js';
 import { runLesson, mc, makeMask, shuffle, pick, checkTyped } from './game.js';
 
@@ -473,7 +473,7 @@ async function viewHome(root) {
         h('span', { class: 'stat-val' }, '📚 ', h('b', {}, `${done}/${TENSES.length}`)), h('span', { class: 'stat-label' }, 'Temas')),
     ),
     h('a', { class: 'hero eng-hero', href: next ? `#/ingles/t/${next.id}` : '#/ingles/practica/mix' },
-      h('span', { class: 'hero-bolt', 'aria-hidden': 'true' }, '🇬🇧'),
+      h('span', { class: 'hero-bolt hero-flag', 'aria-hidden': 'true', html: UK_FLAG }),
       h('span', { class: 'hero-text' }, h('small', {}, next ? 'Siguiente tema' : 'Repaso'), h('strong', {}, next ? `${next.name}` : 'Práctica mixta')),
       h('span', { class: 'hero-go' }, '▶'),
     ),
