@@ -6,7 +6,7 @@ import { getSetting, setSetting } from '../db.js';
 import { speak } from '../speech.js';
 import { h, toast, setHeader } from '../ui.js';
 import { rateControl } from '../components.js';
-import { runLesson, mc, makeMask, shuffle, pick } from './game.js';
+import { runLesson, mc, makeMask, shuffle, pick, checkTyped } from './game.js';
 
 const LEVELS = [[0, 'A1'], [150, 'A2'], [400, 'B1'], [800, 'B2'], [1400, 'C1'], [2200, 'C2']];
 
@@ -151,6 +151,192 @@ const PRACTICE = {
   regulares: { title: 'Verbos regulares', build: () => regularQuestions(10) },
 };
 
+
+// ---------- Exámenes por nivel ----------
+
+export const EXAMS = [
+  { level: 'A1', title: 'Examen A1 · Básico', unlock: 0, topics: ['present-simple', 'present-continuous', 'past-simple', 'modals', 'irregulares'] },
+  { level: 'A2', title: 'Examen A2 · Elemental', unlock: 150, topics: ['past-continuous', 'future-will', 'going-to', 'used-to', 'present-perfect', 'irregulares'] },
+  { level: 'B1', title: 'Examen B1 · Intermedio', unlock: 400, topics: ['present-perfect', 'present-perfect-continuous', 'past-perfect', 'conditionals', 'passive', 'modals'] },
+  { level: 'B2', title: 'Examen B2 · Intermedio alto', unlock: 800, topics: ['past-perfect-continuous', 'future-continuous', 'future-perfect', 'conditionals', 'passive', 'regulares'] },
+  { level: 'C1', title: 'Examen C1 · Avanzado', unlock: 1400, topics: ['future-perfect-continuous', 'past-perfect-continuous', 'future-perfect', 'present-perfect-continuous', 'conditionals', 'passive'] },
+];
+const EXAM_SIZE = 20;
+const PASS = 70;
+
+const topicName = (k) => (k === 'irregulares' ? 'Verbos irregulares' : k === 'regulares' ? 'Verbos regulares' : TENSES.find((t) => t.id === k)?.name || k);
+const topicHref = (k) => (k === 'irregulares' || k === 'regulares' ? `#/ingles/${k}` : `#/ingles/t/${k}`);
+
+function examQuestions(exam) {
+  const per = Math.ceil(EXAM_SIZE / exam.topics.length);
+  const out = [];
+  for (const k of exam.topics) {
+    let qs;
+    if (k === 'irregulares') qs = irregularQuestions(per);
+    else if (k === 'regulares') qs = regularQuestions(per);
+    else {
+      const t = TENSES.find((x) => x.id === k);
+      qs = shuffle(t.exercises).map((ex, i) => fromExercise(t, ex, i % 2 ? 'mc' : 'type'));
+      qs.push(whichTense(t));
+      qs = shuffle(qs).slice(0, per);
+    }
+    qs.forEach((q) => out.push({ ...q, topic: k }));
+  }
+  return shuffle(out).slice(0, EXAM_SIZE);
+}
+
+function examRow(exam, p) {
+  const r = p.exams?.[exam.level];
+  const locked = p.xp < exam.unlock;
+  const status = locked ? '🔒' : r?.passed ? '🏅' : r ? '🔁' : '▶';
+  const sub = locked ? `Se desbloquea en nivel ${exam.level} (faltan ${exam.unlock - p.xp} XP)`
+    : r?.passed ? `Aprobado · mejor nota ${r.best}%`
+    : r ? `No aprobado (${r.last}%) · vuelve a intentarlo`
+    : `${EXAM_SIZE} preguntas · aprueba con ${PASS}%`;
+  return h('a', {
+    class: `term-row exam-row ${locked ? 'locked' : ''}`,
+    href: locked ? null : `#/ingles/examen/${exam.level}`,
+    onclick: locked ? () => toast(`🔒 Gana XP practicando para llegar a ${exam.level}. Te faltan ${exam.unlock - p.xp} XP.`) : null,
+  },
+  h('span', { class: 'exam-badge' }, exam.level),
+  h('span', { class: 'term-main' }, h('strong', {}, exam.title), h('span', { class: 'muted' }, sub)),
+  h('span', { class: 'exam-status' }, status));
+}
+
+async function viewExamIntro(root, level) {
+  const exam = EXAMS.find((e) => e.level === level);
+  if (!exam) { location.hash = '#/ingles'; return; }
+  const p = await getProgress();
+  if (p.xp < exam.unlock) { toast('🔒 Este examen aún está bloqueado'); location.hash = '#/ingles'; return; }
+  setHeader(exam.title, '#/ingles');
+  const r = p.exams?.[level];
+  root.replaceChildren(
+    h('section', { class: 'card center' },
+      h('div', { class: 'exam-badge big' }, exam.level),
+      h('h2', {}, exam.title),
+      h('p', { class: 'muted' }, `${EXAM_SIZE} preguntas · sin pistas · sin vidas · aprueba con ${PASS}%`),
+      r ? h('p', {}, r.passed ? `🏅 Aprobado · mejor nota ${r.best}% · ${r.attempts} intento(s)` : `Último intento: ${r.last}% · ${r.attempts} intento(s)`) : null,
+    ),
+    h('section', { class: 'card' },
+      h('h2', { class: 'label' }, '📋 Temas del examen'),
+      ...exam.topics.map((k) => h('a', { class: 'topic-link', href: topicHref(k) }, `📘 ${topicName(k)}`,
+        r?.weak?.includes(k) ? h('span', { class: 'tag tag-warn' }, 'repasar') : null)),
+      h('p', { class: 'muted small' }, 'Consejo: repasa cada tema y su práctica antes del examen. No verás si aciertas hasta el final, como en un examen real.'),
+    ),
+    h('button', { class: 'btn btn-primary btn-xl', onclick: () => runExam(root, exam) }, '📝 Empezar examen'),
+  );
+}
+
+function runExam(root, exam) {
+  const questions = examQuestions(exam);
+  const answers = [];
+  let i = 0;
+  const wrap = h('div', { class: 'stack', 'data-nolookup': '' });
+  root.replaceChildren(wrap);
+
+  const show = () => {
+    if (i >= questions.length) return results();
+    const q = questions[i];
+    setHeader(`${exam.title}`, '#/ingles');
+    const next = h('button', { class: 'btn btn-primary btn-xl', disabled: true }, i === questions.length - 1 ? 'Terminar examen' : 'Siguiente →');
+    let interaction;
+    let given = null;
+    if (q.mode === 'type') {
+      const input = h('input', { class: 'input type-input', type: 'text', autocomplete: 'off', autocorrect: 'off', autocapitalize: 'none', spellcheck: 'false', placeholder: 'Write your answer…', enterkeyhint: 'next' });
+      input.addEventListener('input', () => { given = input.value; next.disabled = !input.value.trim(); });
+      input.addEventListener('keydown', (e) => { if (e.key === 'Enter' && input.value.trim()) next.click(); });
+      setTimeout(() => input.focus(), 50);
+      interaction = input;
+    } else {
+      const btns = q.options.map((o, k) => h('button', { class: 'opt en', onclick: () => {
+        btns.forEach((b) => b.classList.remove('selected'));
+        btns[k].classList.add('selected');
+        given = k;
+        next.disabled = false;
+      } }, h('span', { class: 'opt-key' }, String.fromCharCode(65 + k)), h('span', {}, o)));
+      interaction = h('div', { class: 'opts' }, ...btns);
+    }
+    next.onclick = () => {
+      const ok = q.mode === 'type' ? checkTyped(given || '', q.answers, true).ok : given === q.answer;
+      answers.push({ q, ok, given: q.mode === 'type' ? given : q.options[given] });
+      i++;
+      show();
+      window.scrollTo(0, 0);
+    };
+    wrap.replaceChildren(
+      h('div', { class: 'row-between' }, h('span', { class: 'muted small' }, `Pregunta ${i + 1} de ${questions.length}`), h('span', { class: 'tag' }, topicName(q.topic))),
+      h('div', { class: 'progress' }, h('div', { class: 'progress-bar eng-bar', style: `width:${(i / questions.length) * 100}%` })),
+      h('h2', { class: 'q-prompt' }, q.prompt),
+      q.sub ? h('p', { class: 'muted small' }, q.sub) : null,
+      q.big ? h('p', { class: 'q-big smaller' }, q.big) : null,
+      q.text ? h('p', { class: 'q-text' }, q.text) : null,
+      interaction,
+      next,
+    );
+  };
+
+  const results = async () => {
+    const score = Math.round((answers.filter((a) => a.ok).length / answers.length) * 100);
+    const passed = score >= PASS;
+    const byTopic = {};
+    for (const a of answers) {
+      const t = (byTopic[a.q.topic] ||= { ok: 0, total: 0 });
+      t.total++;
+      if (a.ok) t.ok++;
+    }
+    const weak = Object.entries(byTopic).filter(([, v]) => v.ok / v.total < PASS / 100).map(([k]) => k);
+
+    const p = await getProgress();
+    p.exams = p.exams || {};
+    const prev = p.exams[exam.level] || { attempts: 0, best: 0, passed: false };
+    const firstPass = passed && !prev.passed;
+    p.exams[exam.level] = { attempts: prev.attempts + 1, best: Math.max(prev.best, score), last: score, passed: prev.passed || passed, weak };
+    if (firstPass) p.xp += 50;
+    await setSetting('english', p);
+
+    setHeader(passed ? '¡Examen aprobado!' : 'Examen no aprobado', '#/ingles');
+    const wrong = answers.filter((a) => !a.ok);
+    wrap.removeAttribute('data-nolookup');
+    wrap.replaceChildren(
+      h('section', { class: 'card center result' },
+        h('div', { class: 'result-icon' }, passed ? '🏅' : '📚'),
+        h('h2', {}, passed ? `¡Aprobaste el ${exam.level}!` : `Obtuviste ${score}%`),
+        h('p', { class: 'muted' }, passed ? (firstPass ? '+50 XP de bonificación por aprobar.' : 'Ya tenías este examen aprobado.') : `Necesitas ${PASS}% para aprobar. ¡Repasa y vuelve a intentarlo!`),
+        h('div', { class: 'result-stats' },
+          h('div', {}, h('b', {}, `${score}%`), h('span', {}, 'nota')),
+          h('div', {}, h('b', {}, `${answers.length - wrong.length}/${answers.length}`), h('span', {}, 'correctas')),
+          h('div', {}, h('b', {}, `${prev.attempts + 1}`), h('span', {}, 'intentos')),
+        ),
+      ),
+      h('section', { class: 'card' },
+        h('h2', { class: 'label' }, '📊 Resultado por tema'),
+        ...Object.entries(byTopic).map(([k, v]) => {
+          const pct = Math.round((v.ok / v.total) * 100);
+          return h('div', { class: 'topic-score' },
+            h('div', { class: 'row-between' }, h('span', {}, topicName(k)), h('b', { class: pct >= PASS ? 'ok' : 'bad-text' }, `${v.ok}/${v.total}`)),
+            h('div', { class: 'progress' }, h('div', { class: `progress-bar ${pct >= PASS ? '' : 'bar-bad'}`, style: `width:${pct}%` })));
+        }),
+      ),
+      weak.length ? h('section', { class: 'card review-card' },
+        h('h2', { class: 'label' }, '📚 Repasa estos temas'),
+        ...weak.map((k) => h('a', { class: 'btn btn-secondary', href: topicHref(k) }, `📘 ${topicName(k)} →`)),
+      ) : null,
+      h('button', { class: 'btn btn-primary btn-xl', onclick: () => { runExam(root, exam); window.scrollTo(0, 0); } }, '🔁 Volver a tomar el examen'),
+      h('a', { class: 'btn btn-secondary', href: '#/ingles' }, '← Volver a Inglés'),
+      wrong.length ? h('h2', { class: 'label' }, `❌ Tus errores (${wrong.length})`) : null,
+      ...wrong.map((a) => h('section', { class: 'card' },
+        h('span', { class: 'tag' }, topicName(a.q.topic)),
+        h('p', { class: 'q-en' }, a.q.prompt),
+        a.q.big ? h('p', {}, a.q.big) : null,
+        a.q.text ? h('p', { class: 'ex-en' }, a.q.text) : null,
+        h('p', { class: 'mistake' }, h('span', { class: 'bad' }, `Tu respuesta: ${a.given || '—'}`), h('span', { class: 'good' }, `✔ ${a.q.correctText}`)),
+      )),
+    );
+  };
+
+  show();
+}
+
 // ---------- Vistas ----------
 
 async function viewHome(root) {
@@ -179,6 +365,8 @@ async function viewHome(root) {
       h('span', { class: 'hero-go' }, '▶'),
     ),
     h('div', { class: 'progress' }, h('div', { class: 'progress-bar eng-bar', style: `width:${lv.progress * 100}%` })),
+    h('h2', { class: 'label' }, '🎓 Exámenes por nivel'),
+    h('div', { class: 'list' }, ...EXAMS.map((e) => examRow(e, p))),
     h('h2', { class: 'label' }, '⚡ Práctica'),
     h('div', { class: 'grid2' },
       h('a', { class: 'btn btn-primary', href: '#/ingles/practica/mix' }, '⚡ Mixta'),
@@ -346,5 +534,6 @@ export async function englishRoute(root, parts) {
   if (parts[0] === 'irregulares') return viewIrregular(root);
   if (parts[0] === 'regulares') return viewRegular(root);
   if (parts[0] === 'practica' && parts[1]) return viewPractice(root, parts[1]);
+  if (parts[0] === 'examen' && parts[1]) return viewExamIntro(root, parts[1]);
   return viewHome(root);
 }

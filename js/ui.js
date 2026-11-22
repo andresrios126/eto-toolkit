@@ -36,7 +36,7 @@ export function setHeader(title, backHash) {
   document.getElementById('title').textContent = title;
   // El botón de ajustes se oculta dentro de Ajustes y durante una lección.
   const gear = document.getElementById('settings');
-  if (gear) gear.hidden = /^#\/(ajustes|apariencia|juego\/leccion|ingles\/practica)/.test(location.hash);
+  if (gear) gear.hidden = /^#\/(ajustes|apariencia|juego\/leccion|ingles\/(practica|examen))/.test(location.hash);
   const back = document.getElementById('back');
   if (backHash) {
     back.hidden = false;

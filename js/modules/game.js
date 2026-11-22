@@ -620,6 +620,8 @@ export async function runLesson(root, opts) {
     else interaction = mcUI();
 
     body.replaceChildren(...head, ...interaction);
+    // Sin diccionario mientras se responde (se vuelve a activar al ver el resultado).
+    body.setAttribute('data-nolookup', '');
     if (q.autoSay) speak(q.say);
 
     // --- Opción múltiple ---
@@ -726,6 +728,7 @@ export async function runLesson(root, opts) {
     function resolve(ok, note) {
       if (locked) return;
       locked = true;
+      body.removeAttribute('data-nolookup');
       queue.shift();
       if (ok) {
         correct++;

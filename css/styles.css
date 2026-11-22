@@ -41,6 +41,7 @@ html, body {
 }
 
 body {
+  -webkit-user-select: none; user-select: none; -webkit-touch-callout: none;
   min-height: 100vh; min-height: 100dvh;
   background-color: var(--bg);
   background-image:
@@ -632,5 +633,47 @@ p { margin: 0 0 10px; }
 .verbs td, .verbs th { font-size: 14px; }
 .verbs tbody tr { cursor: pointer; }
 .verbs tbody tr:active { background: var(--surface-2); }
+
+/* ---------- Globo de traducción ---------- */
+input, textarea { -webkit-user-select: text; user-select: text; }
+.lookup {
+  position: absolute; z-index: 60;
+  padding: 12px 14px; border-radius: 14px;
+  background: var(--text); color: var(--bg);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, .3);
+  animation: pop .15s ease-out;
+}
+.lookup::after {
+  content: ''; position: absolute; left: var(--arrow-x, 50%); bottom: -7px; transform: translateX(-50%) rotate(45deg);
+  width: 14px; height: 14px; background: var(--text);
+}
+.lookup.below::after { bottom: auto; top: -7px; }
+.lookup-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.lookup-head strong { font-size: 18px; }
+.lookup-say { border: 0; background: rgba(127, 127, 127, .25); border-radius: 10px; width: 36px; height: 36px; font-size: 18px; cursor: pointer; }
+.lookup p { margin: 4px 0 0; position: relative; z-index: 1; }
+.lookup-es { font-size: 16px; font-weight: 600; }
+.lookup-es.muted { color: inherit; opacity: .7; font-weight: 400; font-size: 14px; }
+.lookup-note, .lookup-phrase { font-size: 13px; opacity: .8; }
+@keyframes pop { from { transform: scale(.9); opacity: 0; } }
+
+.exam-badge {
+  flex: none; width: 46px; height: 46px; border-radius: 12px; display: grid; place-items: center;
+  background: linear-gradient(135deg, #e0405f, #8a3ffc); color: #fff; font-weight: 900; font-size: 16px;
+}
+.exam-badge.big { width: 72px; height: 72px; font-size: 26px; border-radius: 18px; margin: 0 auto; }
+.exam-row { gap: 12px; justify-content: flex-start; }
+.exam-row .term-main { flex: 1; }
+.exam-row.locked { opacity: .55; }
+.exam-row.locked .exam-badge { background: var(--border); color: var(--muted); }
+.exam-status { font-size: 22px; }
+.topic-link { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 8px 0; color: var(--accent); font-weight: 600; text-decoration: none; border-bottom: 1px solid var(--border); }
+.tag-warn { color: var(--warn); }
+.topic-score { display: flex; flex-direction: column; gap: 4px; margin-bottom: 8px; }
+.bad-text { color: var(--danger); }
+.bar-bad { background: var(--danger); }
+.review-card { border-color: rgba(255, 176, 32, .5); }
+.opt.selected { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 14%, var(--surface)); box-shadow: 0 4px 0 var(--accent); }
+.opt.selected .opt-key { border-color: var(--accent); background: var(--accent); color: var(--on-accent); }
 
 [hidden] { display: none !important; }

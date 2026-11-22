@@ -37,6 +37,12 @@ Aplicación web progresiva (PWA) en español para **Electro-Technical Officers**
 - Cada tema: cuándo se usa, estructura (afirmativa, negativa, pregunta), palabras clave, ejemplos con voz y traducción, errores comunes y **10 ejercicios** (escribir el verbo, elegir la forma correcta, identificar el tiempo, traducir).
 - **Verbos**: formas del verbo (base, pasado, participio, -ing), **89 irregulares** con tabla, búsqueda y voz, y **verbos regulares** con reglas de -ed y pronunciación /t/ /d/ /ɪd/.
 - Práctica mixta y "¿Qué tiempo es?". Las respuestas escritas se corrigen de forma estricta (por ejemplo, "work" no vale por "works").
+- **🎓 Exámenes por nivel (A1, A2, B1, B2, C1)**: se desbloquean al alcanzar ese nivel de XP. 20 preguntas sin pistas ni vidas, sin ver si aciertas hasta el final; se aprueba con 70 %. Al terminar: nota por tema, **qué temas repasar** (con enlace directo), tus errores con la respuesta correcta y la opción de **volver a tomarlo**. Aprobar por primera vez da +50 XP.
+
+### 📖 Diccionario al mantener presionado
+- En cualquier pantalla, **mantén presionada una palabra en inglés 1,5 s** y aparece un globo con su significado en español, su forma base (went → go, studied → study) y, si forma parte de un término técnico, el término completo ("bow thruster": hélice de proa). Botón 🔊 para escucharla.
+- Se cierra al tocar cualquier otra parte. Funciona sin internet (diccionario de ~850 palabras + glosario técnico + verbos).
+- Desactivado en los exámenes y mientras respondes en los juegos (se activa de nuevo al ver el resultado).
 
 ### 🎤 Entrenador de entrevistas
 
@@ -127,12 +133,14 @@ js/modules/glossary.js  Glosario y tarjetas
 js/modules/faults.js    Casos de fallas
 js/modules/guide.js     Guía visual
 js/modules/mock.js      Simulacro de entrevista
-js/modules/english.js   Sub-app de inglés
+js/modules/english.js   Sub-app de inglés y exámenes por nivel
+js/lookup.js            Globo de traducción (mantener presionado)
 js/data/questions*.js   Preguntas, respuestas modelo y puntos clave
 js/data/glossary*.js    Términos del glosario
 js/data/faults.js       Casos de fallas
 js/data/diagrams.js     Diagramas SVG
 js/data/english.js      Gramática, ejercicios y verbos de inglés
+js/data/dictionary.js   Diccionario inglés → español sin conexión
 icons/                  Íconos de la app
 ```
 

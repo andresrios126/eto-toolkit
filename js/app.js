@@ -2,6 +2,7 @@
 
 import { exportBackup, importBackup, requestPersistence, getSetting, setSetting } from './db.js';
 import { rateControl } from './components.js';
+import { initLookup } from './lookup.js';
 import { THEMES, CUSTOM_SWATCHES, applyTheme, currentTheme, saveTheme, themeVars, DEFAULT_THEME } from './themes.js';
 import { initSpeech, stop as stopSpeech } from './speech.js';
 import { h, toast, setHeader } from './ui.js';
@@ -18,7 +19,7 @@ import { TERMS } from './data/glossary.js';
 import { FAULTS } from './data/faults.js';
 import { DIAGRAMS } from './data/diagrams.js';
 
-const APP_VERSION = '3.0.1';
+const APP_VERSION = '3.1.0';
 
 const MODULES = [
   { key: 'juego', icon: '🎮', title: 'Juego', desc: 'Opción múltiple y escritura', cls: 'tile-game' },
@@ -250,6 +251,7 @@ async function start() {
   applyTheme(saved || (await getSetting('theme', null)) || DEFAULT_THEME);
   await initSpeech();
   requestPersistence();
+  initLookup();
   window.addEventListener('hashchange', route);
   route();
 
