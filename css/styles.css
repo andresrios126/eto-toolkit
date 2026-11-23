@@ -772,3 +772,5 @@ a.chip.active { color: var(--on-accent); }
 .challenge-card .term-chips { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin: 6px 0; }
 .word-chip.tag-ok { background: rgba(62, 207, 142, .18); }
 .word-chip.tag-ok::before { content: '✓ '; }
+.usage-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 8px; }
+.usage-grid .stat { cursor: default; background: var(--surface-2); }

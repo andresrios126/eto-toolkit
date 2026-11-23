@@ -4,6 +4,7 @@ import { db, exportBackup, importBackup, requestPersistence, getSetting, setSett
 import { rateControl } from './components.js';
 import { initLookup } from './lookup.js';
 import { initCloud, cloudConfigured, getSession, getStatus, signIn, signUp, signOut, syncNow } from './cloud.js';
+import { pingUsage, fetchUsage, statsEnabled, setStatsEnabled } from './stats.js';
 import { APP_ICONS, iconPath, currentIcon, applyIcon, installUrl } from './icons.js';
 import { THEMES, CUSTOM_SWATCHES, applyTheme, currentTheme, saveTheme, themeVars, DEFAULT_THEME } from './themes.js';
 import { initSpeech, stop as stopSpeech } from './speech.js';
@@ -21,7 +22,7 @@ import { TERMS } from './data/glossary.js';
 import { FAULTS } from './data/faults.js';
 import { DIAGRAMS } from './data/diagrams.js';
 
-const APP_VERSION = '3.7.0';
+const APP_VERSION = '3.8.0';
 
 const MODULES = [
   { key: 'juego', icon: '🎮', title: 'Juego', desc: 'Opción múltiple y escritura', cls: 'tile-game' },
@@ -266,6 +267,7 @@ function viewSettings() {
     ),
     h('h2', { class: 'label' }, '💾 Datos'),
     h('a', { class: 'btn btn-secondary', href: '#/respaldo' }, '💾 Respaldo: exportar o importar'),
+    usageSection(),
     h('h2', { class: 'label' }, 'ℹ️ App'),
     h('section', { class: 'card' },
       h('div', { class: 'set-row' }, h('span', {}, 'Versión'), h('b', {}, APP_VERSION)),
@@ -273,6 +275,46 @@ function viewSettings() {
       updateBtn,
     ),
   );
+}
+
+// Contador anónimo de usuarios.
+function usageSection() {
+  const wrap = h('div', {});
+  const stat = (val, label) => h('div', { class: 'stat' }, h('span', { class: 'stat-val' }, h('b', {}, val)), h('span', { class: 'stat-label' }, label));
+  const sw = h('button', { class: `switch${statsEnabled() ? ' on' : ''}`, role: 'switch', 'aria-checked': String(statsEnabled()), 'aria-label': 'Contar este dispositivo' });
+  const body = h('div', {}, h('p', { class: 'muted small' }, 'Cargando…'));
+  const load = async () => {
+    const u = await fetchUsage();
+    if (u.error) {
+      body.replaceChildren(h('p', { class: 'muted small' }, u.error === 'offline' ? 'Sin conexión: conéctate a internet para ver el contador.'
+        : u.error === 'rules' ? 'El contador aún no está activado en Firebase (falta publicar las reglas de "devices").' : 'La nube no está configurada.'));
+      return;
+    }
+    body.replaceChildren(
+      h('div', { class: 'usage-grid' },
+        stat(u.total, 'Han usado la app'), stat(u.d7, 'Activos 7 días'),
+        stat(u.d30, 'Activos 30 días'), stat(Math.max(0, u.total - u.d30), 'Sin usarla +30 días')),
+      h('p', { class: 'muted small' }, `👤 ${u.accounts} con cuenta iniciada · ${Math.max(0, u.total - u.accounts)} sin cuenta.`),
+    );
+  };
+  sw.onclick = async () => {
+    const on = !sw.classList.contains('on');
+    sw.classList.toggle('on', on); sw.setAttribute('aria-checked', String(on));
+    await setStatsEnabled(on, APP_VERSION);
+    toast(on ? 'Este dispositivo se cuenta de forma anónima' : 'Este dispositivo ya no se cuenta');
+    load();
+  };
+  wrap.replaceChildren(
+    h('h2', { class: 'label' }, '📊 Usuarios de la app'),
+    h('section', { class: 'card' },
+      body,
+      h('p', { class: 'muted small' }, 'Se cuentan dispositivos (si una persona usa la app en su celular y su computadora, cuenta 2). Es anónimo: solo se guarda un número al azar y la fecha de uso, sin nombres ni datos personales.'),
+      h('div', { class: 'set-row' }, h('span', {}, 'Contar este dispositivo'), sw),
+      h('button', { class: 'btn btn-ghost', onclick: () => { body.replaceChildren(h('p', { class: 'muted small' }, 'Cargando…')); load(); } }, '🔄 Actualizar'),
+    ),
+  );
+  load();
+  return wrap;
 }
 
 function viewBackup() {
@@ -371,6 +413,8 @@ async function start() {
   requestPersistence();
   initLookup();
   initCloud();
+  pingUsage(APP_VERSION);
+  window.addEventListener('online', () => pingUsage(APP_VERSION));
   // La sección 'Mis imágenes' se retiró: liberar el espacio de imágenes guardadas antes.
   db.clear('images').catch(() => {});
   // Si la sincronización trajo avance de otro dispositivo, refrescar pantallas de resumen.

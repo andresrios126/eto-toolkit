@@ -1,5 +1,10 @@
 # Historial de cambios
 
+## v3.8.0 — Contador de usuarios
+- ⚙️ Ajustes → **📊 Usuarios de la app**: cuántos dispositivos han usado la app, activos en 7 y 30 días, sin usarla hace más de 30 días, y cuántos tienen cuenta.
+- Anónimo: cada dispositivo guarda solo un id al azar, la fecha del primer y último uso (una vez al día), si tiene cuenta y la versión. Se puede desactivar ("Contar este dispositivo"), lo que borra su registro.
+- Requiere publicar la regla `devices` en Firestore (ver MEJORAS.md).
+
 ## v3.7.0 — Reto recomendado en Ensayos
 - **🎯 Reto recomendado** por nivel: la app elige un tema (primero los que no has escrito, luego los de nota más baja), te pide **tiempos verbales** (más en niveles altos y los que has fallado en ensayos y exámenes) y **palabras obligatorias** del tema (3 en A1 hasta 7 en C1; en B2 y C1 incluye un conector avanzado).
 - Las palabras se marcan en verde al usarlas (acepta worked, working, went…). Nueva parte de la nota: **Palabras del reto**. Botón **🔄 Otro reto**.

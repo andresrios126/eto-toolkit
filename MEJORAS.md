@@ -15,6 +15,14 @@ service cloud.firestore {
     match /users/{userId} {
       allow read, write: if request.auth != null && request.auth.uid == userId;
     }
+    // Contador anónimo de usuarios (v3.8.0): solo id al azar, fechas, si tiene cuenta y versión.
+    match /devices/{deviceId} {
+      allow read, delete: if true;
+      allow create, update: if deviceId.matches('^[a-f0-9]{24}$')
+        && request.resource.data.keys().hasOnly(['first', 'last', 'acct', 'v'])
+        && request.resource.data.first is timestamp
+        && request.resource.data.last is timestamp;
+    }
   }
 }
 ```
