@@ -798,3 +798,5 @@ a.chip.active { color: var(--on-accent); }
 .me-badge:active { transform: scale(.96); }
 .usage-line { margin: 0; text-align: center; font-size: 14px; }
 .account .usage-line { text-align: left; }
+.grid3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.grid3 .btn { padding-left: 6px; padding-right: 6px; font-size: 15px; }

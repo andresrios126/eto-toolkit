@@ -27,9 +27,10 @@ service cloud.firestore {
     match /leaderboard/{userId} {
       allow read: if request.auth != null;
       allow create, update: if request.auth != null && request.auth.uid == userId
-        && request.resource.data.keys().hasOnly(['name', 'xp', 'eng', 'updated'])
+        && request.resource.data.keys().hasOnly(['name', 'xp', 'eng', 'time', 'updated'])
         && request.resource.data.name is string && request.resource.data.name.size() <= 20
-        && request.resource.data.xp is int && request.resource.data.eng is int;
+        && request.resource.data.xp is int && request.resource.data.eng is int
+        && (!('time' in request.resource.data) || request.resource.data.time is int);
       allow delete: if request.auth != null && request.auth.uid == userId;
     }
   }

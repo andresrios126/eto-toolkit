@@ -1,5 +1,9 @@
 # Historial de cambios
 
+## v3.13.0 — Tiempo en el ranking
+- 🏆 Ranking: cada usuario muestra su tiempo en la app (⏱ 12 h 35 min) y hay una pestaña nueva **⏱ Tiempo** con el top 10 de quienes más la han usado.
+- Requiere actualizar la regla `leaderboard` para permitir el campo `time` (ver MEJORAS.md). Mientras tanto el ranking sigue funcionando sin el tiempo.
+
 ## v3.12.0 — Tiempo total de uso
 - La app cuenta el tiempo de uso real (solo con la app en pantalla; se pausa tras 5 min sin tocar nada) y lo muestra en horas y minutos (p. ej. "12 h 35 min") en el inicio y en ⚙️ → Cuenta.
 - Con cuenta, el tiempo se guarda en el documento del usuario en Firebase (`users/{uid}`, ajuste `usage`, segundos por dispositivo) y se suman todos sus dispositivos. Sin cuenta queda solo en el dispositivo.

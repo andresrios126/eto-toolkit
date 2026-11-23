@@ -5,22 +5,27 @@ import { getSetting, setSetting } from '../db.js';
 import { h, toast, setHeader } from '../ui.js';
 import { cloudConfigured, getSession, fetchRanking, publishScore, removeScore, refreshMyRank } from '../cloud.js';
 import { levelInfo } from '../game-state.js';
+import { formatHM } from '../usage.js';
 
 const ENG_LEVELS = [[0, 'A1'], [150, 'A2'], [400, 'B1'], [800, 'B2'], [1400, 'C1'], [2200, 'C2']];
 const engLevel = (xp) => ENG_LEVELS.filter(([n]) => xp >= n).pop()[1];
 const MEDALS = ['🥇', '🥈', '🥉'];
 
 const TABS = {
-  xp: { label: '⚡ Juego ETO', level: (v) => levelInfo(v).name },
-  eng: { label: '🇬🇧 Inglés', level: engLevel },
+  xp: { label: '⚡ ETO', level: (v) => levelInfo(v).name, show: (v) => `${v} XP` },
+  eng: { label: '🇬🇧 Inglés', level: engLevel, show: (v) => `${v} XP` },
+  time: { label: '⏱ Tiempo', level: () => '', show: (v) => formatHM(v) },
 };
+const timeText = (t) => (t == null ? '' : `⏱ ${formatHM(t)}`);
+// Segunda línea de cada usuario: nivel y tiempo (o, en la pestaña Tiempo, su XP del juego).
+const detail = (field, r) => (field === 'time' ? `⚡ ${r.xp} XP · 🇬🇧 ${engLevel(r.eng)}` : [TABS[field].level(r[field]), timeText(r.time)].filter(Boolean).join(' · '));
 
 export async function rankingRoute(root, parts) {
-  const field = parts[0] === 'eng' ? 'eng' : 'xp';
+  const field = TABS[parts[0]] ? parts[0] : 'xp';
   setHeader('Ranking', '#/');
   const session = getSession();
 
-  const tabs = h('div', { class: 'grid2' }, ...Object.entries(TABS).map(([k, t]) => h('a', {
+  const tabs = h('div', { class: 'grid3' }, ...Object.entries(TABS).map(([k, t]) => h('a', {
     class: `btn ${k === field ? 'btn-primary' : 'btn-secondary'}`, href: `#/ranking/${k}`,
   }, t.label)));
 
@@ -33,6 +38,7 @@ export async function rankingRoute(root, parts) {
         h('h2', {}, 'Top 10 de usuarios'),
         h('p', {}, 'El ranking es solo para usuarios con cuenta. Sin cuenta, tu progreso se guarda únicamente en este dispositivo y no aparece en el ranking.'),
         h('p', { class: 'muted small' }, `Tu progreso aquí: ⚡ ${game.xp || 0} XP (${levelInfo(game.xp || 0).name}) · 🇬🇧 ${eng.xp || 0} XP (${engLevel(eng.xp || 0)})`),
+        h('p', { class: 'muted small' }, '⏱ Tu tiempo en la app aparece en ⚙️ Ajustes y al final del inicio.'),
       ),
       h('a', { class: 'btn btn-primary btn-xl', href: '#/ajustes' }, '👤 Crear cuenta o iniciar sesión'),
     );
@@ -60,11 +66,11 @@ export async function rankingRoute(root, parts) {
         return h('div', { class: `rank-row${isMe ? ' me' : ''}${i < 3 ? ' podium' : ''}` },
           h('span', { class: 'rank-pos' }, MEDALS[i] || `#${i + 1}`),
           h('span', { class: 'rank-name' }, h('strong', {}, r.name), isMe ? h('span', { class: 'tag tag-ok' }, 'tú') : null),
-          h('span', { class: 'rank-score' }, h('b', {}, `${r[field]} XP`), h('small', {}, TABS[field].level(r[field]))));
+          h('span', { class: 'rank-score' }, h('b', {}, TABS[field].show(r[field] || 0)), h('small', {}, detail(field, r))));
       }));
       if (me && !top.some((r) => r.uid === session.uid)) {
         mine.replaceChildren(h('section', { class: 'card center' },
-          h('p', {}, `Tu posición: `, h('b', {}, `#${me.rank}`), ` de ${total} · ${me.value} XP (${TABS[field].level(me.value)})`),
+          h('p', {}, `Tu posición: `, h('b', {}, `#${me.rank}`), ` de ${total} · ${TABS[field].show(me.value)}${TABS[field].level(me.value) ? ` (${TABS[field].level(me.value)})` : ''}`),
           h('p', { class: 'muted small' }, 'Sigue practicando para entrar al top 10.')));
       } else if (!me) {
         mine.replaceChildren(h('p', { class: 'muted small center' }, 'No apareces en el ranking (lo desactivaste abajo).'));
@@ -93,7 +99,7 @@ export async function rankingRoute(root, parts) {
     mine,
     h('section', { class: 'card' },
       h('div', { class: 'set-row' }, h('span', {}, 'Aparecer en el ranking'), sw),
-      h('p', { class: 'muted small' }, 'Los demás usuarios con cuenta ven tu nombre de usuario, tu nivel y tu XP. Quien no tiene cuenta no aparece: su progreso queda solo en su teléfono.'),
+      h('p', { class: 'muted small' }, 'Los demás usuarios con cuenta ven tu nombre de usuario, tu nivel, tu XP y tu tiempo en la app. Quien no tiene cuenta no aparece: su progreso queda solo en su teléfono.'),
       h('button', { class: 'btn btn-ghost', onclick: load }, '🔄 Actualizar'),
     ),
   );

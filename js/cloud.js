@@ -10,7 +10,7 @@
 
 import { CLOUD_CONFIG } from './cloud-config.js';
 import { db, STORES, onDataChange, withoutChangeEvents, getSetting } from './db.js';
-import { mergeUsage } from './usage.js';
+import { mergeUsage, usageTotal } from './usage.js';
 
 const SYNC_STORES = ['answers', 'settings', 'log', 'glossary', 'faults'];
 const LOCAL_ONLY_SETTINGS = new Set(['theme', 'icon', 'sound', 'speechRate', 'interviewFilter', 'glossaryFilter', 'faultFilter', 'cardsDeck', 'cardsDir', 'cardsSize', 'mockCfg']);
@@ -342,15 +342,20 @@ export async function publishScore() {
   if (!cloudConfigured() || !s || !(await rankingEnabled())) return false;
   const game = await getSetting('game', {});
   const eng = await getSetting('english', {});
-  const body = { fields: {
+  const fields = {
     name: { stringValue: s.username },
     xp: { integerValue: String(Math.max(0, Math.round(game.xp || 0))) },
     eng: { integerValue: String(Math.max(0, Math.round(eng.xp || 0))) },
+    time: { integerValue: String(Math.round(usageTotal(await getSetting('usage', {})))) },
     updated: { timestampValue: new Date().toISOString() },
-  } };
-  const res = await fetch(`${docsBase()}/leaderboard/${s.uid}`, {
-    method: 'PATCH', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${await idToken()}` }, body: JSON.stringify(body),
+  };
+  const token = await idToken();
+  const put = (f) => fetch(`${docsBase()}/leaderboard/${s.uid}`, {
+    method: 'PATCH', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify({ fields: f }),
   });
+  let res = await put(fields);
+  // Si las reglas de Firebase aún no permiten el campo "time", publicar sin él.
+  if (res.status === 403) { const { time, ...rest } = fields; res = await put(rest); }
   if (!res.ok) throw httpError(res);
   return true;
 }
@@ -385,13 +390,14 @@ export async function fetchRanking(field) {
   } });
   const top = rows.filter((r) => r.document).map((r) => {
     const f = r.document.fields || {};
-    return { uid: r.document.name.split('/').pop(), name: f.name?.stringValue || '—', xp: Number(f.xp?.integerValue || 0), eng: Number(f.eng?.integerValue || 0) };
+    return { uid: r.document.name.split('/').pop(), name: f.name?.stringValue || '—', xp: Number(f.xp?.integerValue || 0), eng: Number(f.eng?.integerValue || 0), time: f.time ? Number(f.time.integerValue || 0) : null };
   });
   const total = await countWhere(null);
   let me = null;
   if (s && (await rankingEnabled())) {
     const mine = top.find((r) => r.uid === s.uid);
-    const myVal = mine ? mine[field] : Math.round(((await getSetting(field === 'xp' ? 'game' : 'english', {})).xp) || 0);
+    const myVal = mine ? (mine[field] || 0) : field === 'time' ? Math.round(usageTotal(await getSetting('usage', {})))
+      : Math.round(((await getSetting(field === 'xp' ? 'game' : 'english', {})).xp) || 0);
     const above = await countWhere({ fieldFilter: { field: { fieldPath: field }, op: 'GREATER_THAN', value: { integerValue: String(myVal) } } });
     me = { rank: above + 1, value: myVal };
   }
