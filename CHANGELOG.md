@@ -1,5 +1,10 @@
 # Historial de cambios
 
+## v3.10.0 — Ranking de usuarios
+- Nuevo módulo **🏆 Ranking** en el inicio: top 10 de usuarios con cuenta por XP del **⚡ Juego ETO** o de **🇬🇧 Inglés**, con medallas, nivel y "tú" resaltado. Si no estás en el top 10, muestra tu posición.
+- Sin cuenta no apareces: el progreso queda solo en el teléfono. Interruptor "Aparecer en el ranking" para salir cuando quieras.
+- El puntaje se publica solo al sincronizar. Requiere publicar la regla `leaderboard` en Firestore (ver MEJORAS.md).
+
 ## v3.9.0 — Ensayos: inglés general e inglés marítimo
 - Ensayos se divide en **🌎 Inglés general** (24 temas para cualquier persona) y **⚓ Inglés marítimo** (24 temas de la vida a bordo, trabajo en máquinas y electricidad, seguridad y reportes). El reto recomendado se genera dentro del apartado elegido.
 

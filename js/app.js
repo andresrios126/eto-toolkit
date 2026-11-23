@@ -16,13 +16,14 @@ import { faultsRoute } from './modules/faults.js';
 import { guideRoute } from './modules/guide.js';
 import { mockRoute } from './modules/mock.js';
 import { englishRoute } from './modules/english.js';
+import { rankingRoute } from './modules/ranking.js';
 import { getGame } from './game-state.js';
 import { QUESTIONS } from './data/questions.js';
 import { TERMS } from './data/glossary.js';
 import { FAULTS } from './data/faults.js';
 import { DIAGRAMS } from './data/diagrams.js';
 
-const APP_VERSION = '3.9.0';
+const APP_VERSION = '3.10.0';
 
 const MODULES = [
   { key: 'juego', icon: '🎮', title: 'Juego', desc: 'Opción múltiple y escritura', cls: 'tile-game' },
@@ -32,6 +33,7 @@ const MODULES = [
   { key: 'fallas', icon: '🔧', title: 'Fallas', desc: `${FAULTS.length} casos de diagnóstico`, cls: 'tile-fault' },
   { key: 'guia', icon: '🧭', title: 'Guía visual', desc: `${DIAGRAMS.length} diagramas de referencia`, cls: 'tile-guide' },
   { key: 'ingles', icon: '', svg: UK_FLAG, title: 'Inglés', desc: 'Tiempos verbales y verbos', cls: 'tile-eng' },
+  { key: 'ranking', icon: '🏆', title: 'Ranking', desc: 'Top 10 de usuarios', cls: 'tile-rank' },
 ];
 
 const root = document.getElementById('app');
@@ -394,6 +396,7 @@ async function route() {
     else if (mod === 'guia') cleanup = await guideRoute(root, rest);
     else if (mod === 'simulacro') cleanup = await mockRoute(root, rest);
     else if (mod === 'ingles') cleanup = await englishRoute(root, rest);
+    else if (mod === 'ranking') cleanup = await rankingRoute(root, rest);
     else if (mod === 'respaldo') viewBackup();
     else if (mod === 'ajustes' || mod === 'apariencia') viewSettings();
     else { location.hash = '#/'; return; }

@@ -9,7 +9,7 @@
 // - Las imágenes privadas no se sincronizan (pesan mucho); siguen en cada dispositivo y en el respaldo.
 
 import { CLOUD_CONFIG } from './cloud-config.js';
-import { db, STORES, onDataChange, withoutChangeEvents } from './db.js';
+import { db, STORES, onDataChange, withoutChangeEvents, getSetting } from './db.js';
 
 const SYNC_STORES = ['answers', 'settings', 'log', 'glossary', 'faults'];
 const LOCAL_ONLY_SETTINGS = new Set(['theme', 'icon', 'sound', 'speechRate', 'interviewFilter', 'glossaryFilter', 'faultFilter', 'cardsDeck', 'cardsDir', 'cardsSize', 'mockCfg']);
@@ -287,6 +287,7 @@ export async function syncNow() {
       const size = JSON.stringify(merged).length;
       if (size > 900000) throw new Error('El progreso es demasiado grande para la nube.');
       await putRemote(merged);
+      publishScore().catch(() => { /* el ranking es opcional */ });
       setStatus({ syncing: false, pending: false, error: null, lastSync: new Date().toISOString() });
       if (changedLocal) window.dispatchEvent(new CustomEvent('eto-cloud-updated'));
       return true;
@@ -324,6 +325,75 @@ export function initCloud() {
     if (getSession() && getStatus().pending && !getStatus().syncing && document.visibilityState === 'visible') syncNow();
   }, 30000);
   if (getSession()) schedule(1000);
+}
+
+// ---------- Ranking (top 10 de usuarios con cuenta) ----------
+// Colección "leaderboard": un documento por usuario con su nombre de usuario, XP del juego ETO y XP de inglés.
+
+const docsBase = () => `${config().firestoreBase}/projects/${config().projectId}/databases/(default)/documents`;
+const httpError = (res) => Object.assign(new Error(`HTTP ${res.status}`), { status: res.status });
+
+async function rankingEnabled() { return !(await getSetting('rankingOff', false)); }
+
+export async function publishScore() {
+  const s = getSession();
+  if (!cloudConfigured() || !s || !(await rankingEnabled())) return false;
+  const game = await getSetting('game', {});
+  const eng = await getSetting('english', {});
+  const body = { fields: {
+    name: { stringValue: s.username },
+    xp: { integerValue: String(Math.max(0, Math.round(game.xp || 0))) },
+    eng: { integerValue: String(Math.max(0, Math.round(eng.xp || 0))) },
+    updated: { timestampValue: new Date().toISOString() },
+  } };
+  const res = await fetch(`${docsBase()}/leaderboard/${s.uid}`, {
+    method: 'PATCH', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${await idToken()}` }, body: JSON.stringify(body),
+  });
+  if (!res.ok) throw httpError(res);
+  return true;
+}
+
+export async function removeScore() {
+  const s = getSession();
+  if (!s) return;
+  const res = await fetch(`${docsBase()}/leaderboard/${s.uid}`, { method: 'DELETE', headers: { Authorization: `Bearer ${await idToken()}` } });
+  if (!res.ok && res.status !== 404) throw httpError(res);
+}
+
+async function firestorePost(path, body) {
+  const res = await fetch(`${docsBase()}:${path}`, {
+    method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${await idToken()}` }, body: JSON.stringify(body),
+  });
+  if (!res.ok) throw httpError(res);
+  return res.json();
+}
+
+const countWhere = async (where) => Number((await firestorePost('runAggregationQuery', { structuredAggregationQuery: {
+  structuredQuery: { from: [{ collectionId: 'leaderboard' }], ...(where ? { where } : {}) },
+  aggregations: [{ alias: 'n', count: {} }],
+} }))?.[0]?.result?.aggregateFields?.n?.integerValue || 0);
+
+// field: 'xp' (juego ETO) o 'eng' (inglés). Devuelve { top: [{uid, name, xp, eng}], total, me: {rank, xp} | null }.
+export async function fetchRanking(field) {
+  const s = getSession();
+  const rows = await firestorePost('runQuery', { structuredQuery: {
+    from: [{ collectionId: 'leaderboard' }],
+    orderBy: [{ field: { fieldPath: field }, direction: 'DESCENDING' }],
+    limit: 10,
+  } });
+  const top = rows.filter((r) => r.document).map((r) => {
+    const f = r.document.fields || {};
+    return { uid: r.document.name.split('/').pop(), name: f.name?.stringValue || '—', xp: Number(f.xp?.integerValue || 0), eng: Number(f.eng?.integerValue || 0) };
+  });
+  const total = await countWhere(null);
+  let me = null;
+  if (s && (await rankingEnabled())) {
+    const mine = top.find((r) => r.uid === s.uid);
+    const myVal = mine ? mine[field] : Math.round(((await getSetting(field === 'xp' ? 'game' : 'english', {})).xp) || 0);
+    const above = await countWhere({ fieldFilter: { field: { fieldPath: field }, op: 'GREATER_THAN', value: { integerValue: String(myVal) } } });
+    me = { rank: above + 1, value: myVal };
+  }
+  return { top, total, me };
 }
 
 // Para pruebas

@@ -23,6 +23,15 @@ service cloud.firestore {
         && request.resource.data.first is timestamp
         && request.resource.data.last is timestamp;
     }
+    // Ranking top 10 (v3.10.0): solo usuarios con cuenta leen; cada uno escribe solo su propio puntaje.
+    match /leaderboard/{userId} {
+      allow read: if request.auth != null;
+      allow create, update: if request.auth != null && request.auth.uid == userId
+        && request.resource.data.keys().hasOnly(['name', 'xp', 'eng', 'updated'])
+        && request.resource.data.name is string && request.resource.data.name.size() <= 20
+        && request.resource.data.xp is int && request.resource.data.eng is int;
+      allow delete: if request.auth != null && request.auth.uid == userId;
+    }
   }
 }
 ```
