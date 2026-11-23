@@ -201,7 +201,20 @@ function mergeEnglish(a = {}, b = {}) {
       last: v.last ?? x.last, passed: Boolean(x.passed || v.passed), weak: v.weak || x.weak,
     } : v;
   }
-  return { ...a, ...b, xp: Math.max(a.xp || 0, b.xp || 0), lessons: mergeStars(a.lessons, b.lessons), exams, reviews: { ...(a.reviews || {}), ...(b.reviews || {}) } };
+  return { ...a, ...b, xp: Math.max(a.xp || 0, b.xp || 0), lessons: mergeStars(a.lessons, b.lessons), exams, reviews: { ...(a.reviews || {}), ...(b.reviews || {}) },
+    essays: mergeEssays(a.essays, b.essays), essayBest: maxMap(a.essayBest, b.essayBest) };
+}
+
+function mergeEssays(a = [], b = []) {
+  const seen = new Map();
+  for (const x of [...a, ...b]) seen.set(x.at, x);
+  return [...seen.values()].sort((x, y) => y.at - x.at).slice(0, 30);
+}
+
+function maxMap(a = {}, b = {}) {
+  const out = { ...a };
+  for (const [k, v] of Object.entries(b)) out[k] = Math.max(out[k] ?? 0, v);
+  return out;
 }
 
 function mergeSettings(local = [], remote = []) {

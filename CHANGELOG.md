@@ -1,5 +1,17 @@
 # Historial de cambios
 
+## v3.6.0 — Ensayos con calificación (Inglés)
+- **✍️ Escritura → Ensayos**: 24 temas en 5 niveles (A1–C1) con extensión por nivel, ideas y estructuras que hay que usar.
+- Calificación automática de 0 a 100 sin internet: extensión, gramática (más de 40 errores típicos: he work, I have 30 years, didn't went, people is, more better, depend of, enjoy to…), ortografía y puntuación, variedad de vocabulario, conectores, párrafos y estructuras del tema.
+- Resultado con el texto marcado, lista de correcciones, **qué estudiar** con enlace al tema, lo que hiciste bien, "Corregir y volver a calificar" y **Copiar para corrección con Claude**.
+- Historial de ensayos y mejor nota por tema (se sincroniza con la cuenta). Da XP de inglés al mejorar tu nota.
+
+## v3.5.3 — Fichas de aprendizaje en Inglés
+- Después de responder: oración completa con traducción y tiempo verbal, o las tres formas del verbo con su traducción.
+
+## v3.5.2 — Explicación de cada palabra en los juegos
+- Completa la palabra, Ordena las letras y Escucha y escribe muestran "💡 ¿Qué es?" con la definición y la categoría; al responder, ficha con traducción, definición y ejemplo.
+
 ## v3.5.0 — Curso K-Pos y más diagramas propios
 - **📚 Curso K-Pos** (Guía visual): 9 unidades como un curso de mantenimiento (qué es DP, modos y HMI, sensores y referencias, estación de operador, gabinete DP, red, serial, joystick independiente, respaldo y fallas), cada una con resumen, diagramas y preguntas, y una **evaluación final de 20 preguntas** sin vidas.
 - **10 diagramas nuevos** dibujados desde cero (32 en total): ciclo DP, fuerzas, configuraciones K-Pos, conexión de MRU, DGNSS y correcciones, trama serial, sentencia NMEA de GPS, direcciones IP en red doble, traspaso de mando del joystick y ciclo de vida.

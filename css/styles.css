@@ -743,3 +743,27 @@ select.input { appearance: auto; }
 .learn-card p:last-child { margin: 0; }
 
 [hidden] { display: none !important; }
+
+/* ---------- Ensayos (Escritura) ---------- */
+.card .timer-ring { margin: 0 auto; background: radial-gradient(closest-side, var(--surface) 82%, transparent 83%), conic-gradient(var(--c) calc(var(--p) * 1%), var(--surface-2) 0); }
+.score-mid { --c: var(--warn); }
+.score-low { --c: var(--danger); }
+.essay-title { margin: 6px 0 4px; }
+.essay-ideas { margin: 6px 0; padding-left: 20px; display: flex; flex-direction: column; gap: 4px; }
+.essay-area { min-height: 260px; font-size: 17px; }
+.wc { display: flex; flex-direction: column; gap: 6px; font-size: 14px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.progress-bar.wc-ok { background: var(--ok); }
+.progress-bar.wc-over { background: var(--warn); }
+.essay-badge { min-width: 44px; padding: 4px 10px; border-radius: 999px; text-align: center; font-weight: 800; background: var(--surface-2); color: var(--ok-ink); }
+.essay-badge.mid { color: var(--warn); }
+.essay-badge.low { color: var(--danger); }
+.essay-text { white-space: pre-wrap; line-height: 1.7; font-size: 16px; overflow-wrap: anywhere; }
+.essay-text mark { cursor: pointer; border-radius: 4px; padding: 0 2px; color: inherit; background: rgba(255, 93, 93, .22); border-bottom: 2px solid var(--danger); }
+.essay-text mark.err-mech { background: rgba(255, 176, 32, .22); border-bottom-color: var(--warn); }
+.essay-text mark.err-vocab { background: rgba(63, 169, 255, .2); border-bottom-color: var(--accent); }
+.essay-text sup { font-size: 10px; font-weight: 800; margin-left: 1px; color: var(--muted); }
+.err-list { margin: 12px 0 0; padding-left: 24px; display: flex; flex-direction: column; gap: 8px; }
+.study-item { padding-bottom: 8px; }
+.study-item p { margin: 4px 0 0; }
+a.chip { text-decoration: none; color: var(--text); }
+a.chip.active { color: var(--on-accent); }

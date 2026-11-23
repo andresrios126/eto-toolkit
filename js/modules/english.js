@@ -7,6 +7,7 @@ import { speak } from '../speech.js';
 import { h, toast, setHeader, UK_FLAG } from '../ui.js';
 import { rateControl } from '../components.js';
 import { runLesson, mc, makeMask, shuffle, pick, checkTyped } from './game.js';
+import { essayRoute, essaySummary } from './essay.js';
 
 const LEVELS = [[0, 'A1'], [150, 'A2'], [400, 'B1'], [800, 'B2'], [1400, 'C1'], [2200, 'C2']];
 
@@ -499,6 +500,10 @@ async function viewHome(root) {
       h('a', { class: 'btn btn-primary', href: '#/ingles/practica/mix' }, '⚡ Mixta'),
       h('a', { class: 'btn btn-secondary', href: '#/ingles/practica/quetiempo' }, '🕵️ ¿Qué tiempo es?'),
     ),
+    h('h2', { class: 'label' }, '✍️ Escritura'),
+    h('div', { class: 'list' },
+      h('a', { class: 'term-row', href: '#/ingles/ensayos' },
+        h('span', { class: 'term-main' }, h('strong', {}, 'Ensayos con calificación'), h('span', { class: 'muted' }, essaySummary(p))), h('span', {}, '›'))),
     h('h2', { class: 'label' }, '🔤 Verbos'),
     h('div', { class: 'list' },
       h('a', { class: 'term-row', href: '#/ingles/formas' },
@@ -685,5 +690,6 @@ export async function englishRoute(root, parts) {
   if (parts[0] === 'practica' && parts[1]) return viewPractice(root, parts[1]);
   if (parts[0] === 'examen' && parts[1]) return viewExamIntro(root, parts[1]);
   if (parts[0] === 'repaso' && parts[1]) return viewReview(root, parts[1]);
+  if (/^ensayo/.test(parts[0] || '')) return essayRoute(root, parts);
   return viewHome(root);
 }
