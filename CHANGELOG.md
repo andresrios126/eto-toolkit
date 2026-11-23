@@ -1,5 +1,10 @@
 # Historial de cambios
 
+## v3.13.0 — Preposiciones (Inglés)
+- Nueva sección **📍 Preposiciones** en Inglés con 7 temas: in / on / at (lugar), in / on / at (tiempo), in / on (medios) y arrive in / at, to, for, of / to (= de) y verbos y adjetivos con preposición.
+- Cada tema tiene cuándo se usa, estructura, truco, frases clave con audio, ejemplos con traducción, errores comunes y práctica de 10 ejercicios (escribir y opción múltiple).
+- Botón **📍 Preposiciones** en Práctica (mezcla de todos los temas). Los exámenes A1, A2 y B1 incluyen ahora preguntas de preposiciones.
+
 ## v3.12.0 — Tiempo total de uso
 - La app cuenta el tiempo de uso real (solo con la app en pantalla; se pausa tras 5 min sin tocar nada) y lo muestra en horas y minutos (p. ej. "12 h 35 min") en el inicio y en ⚙️ → Cuenta.
 - Con cuenta, el tiempo se guarda en el documento del usuario en Firebase (`users/{uid}`, ajuste `usage`, segundos por dispositivo) y se suman todos sus dispositivos. Sin cuenta queda solo en el dispositivo.

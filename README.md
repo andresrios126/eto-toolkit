@@ -11,7 +11,7 @@ Aplicación web progresiva (PWA) en español para **Electro-Technical Officers**
 | 🎤 **Entrevistas** | 117 preguntas técnicas (incluye K-Pos), incluidas las de mis equipos y sistemas con respuesta modelo EN/ES, puntos clave, voz y práctica de 2 min |
 | 📖 **Glosario** | 359 términos técnicos EN ↔ ES con definición, ejemplo, voz y tarjetas |
 | 🔧 **Fallas** | 21 casos de troubleshooting + tus propios casos |
-| 🇬🇧 **Inglés** | Sub-app independiente: 17 temas de gramática (12 tiempos verbales, going to, used to, modales, voz pasiva, condicionales) y 89 verbos irregulares |
+| 🇬🇧 **Inglés** | Sub-app independiente: 17 temas de gramática (12 tiempos verbales, going to, used to, modales, voz pasiva, condicionales), 7 temas de preposiciones y 89 verbos irregulares |
 | 🧭 **Guía visual** | 32 diagramas propios + 📚 Curso K-Pos con evaluación |
 
 ### 🎮 Juego (estilo app de idiomas, con tema eléctrico)
@@ -36,7 +36,8 @@ Aplicación web progresiva (PWA) en español para **Electro-Technical Officers**
 - **17 temas**: Present simple / continuous / perfect / perfect continuous, Past simple / continuous / perfect / perfect continuous, Future will / going to / continuous / perfect / perfect continuous, used to, modales, voz pasiva y condicionales.
 - Cada tema: cuándo se usa, estructura (afirmativa, negativa, pregunta), palabras clave, ejemplos con voz y traducción, errores comunes y **10 ejercicios** (escribir el verbo, elegir la forma correcta, identificar el tiempo, traducir).
 - **Verbos**: formas del verbo (base, pasado, participio, -ing), **89 irregulares** con tabla, búsqueda y voz, y **verbos regulares** con reglas de -ed y pronunciación /t/ /d/ /ɪd/. Cada forma muestra su traducción: go = ir · (yo) voy → went = (yo) fui → gone = (he) ido.
-- Práctica mixta y "¿Qué tiempo es?". Las respuestas escritas se corrigen de forma estricta (por ejemplo, "work" no vale por "works").
+- **📍 Preposiciones (7 temas)**: in / on / at de lugar y de tiempo, in / on con medios y arrive in / at, to, for (to = lugar o + verbo, for = actividad o + sustantivo), of / to cuando significan "de", y verbos y adjetivos con preposición (depend on, wait for, good at…). Misma ficha y práctica que los tiempos verbales.
+- Práctica mixta, "¿Qué tiempo es?" y Preposiciones. Las respuestas escritas se corrigen de forma estricta (por ejemplo, "work" no vale por "works").
 - **🎓 Exámenes por nivel (A1, A2, B1, B2, C1)**: se desbloquean al alcanzar ese nivel de XP. 20 preguntas sin pistas ni vidas, sin ver si aciertas hasta el final; se aprueba con 70 %. Al terminar: nota por tema, **qué temas repasar** (con enlace directo), tus errores con la respuesta correcta y la opción de **volver a tomarlo**. Aprobar por primera vez da +50 XP.
 - **✍️ Ensayos con calificación**: 24 temas por nivel (A1 40–70 palabras … C1 250–350), de temas generales (vida diaria, viajes, salud, tecnología, opinión), para cualquier persona que quiera mejorar su inglés, y un apartado aparte de **⚓ Inglés marítimo** con 24 temas de la vida a bordo, máquinas, seguridad y reportes. Contador de palabras y borrador guardado mientras escribes. Al calificar: nota de 0 a 100 por partes (extensión, gramática, ortografía y puntuación, vocabulario, organización y conectores, estructuras del tema), tu texto con los errores marcados y su corrección, **qué estudiar** (con enlace al tema) y lo que hiciste bien. La corrección es automática y sin internet (errores típicos de hispanohablantes); el botón **📋 Copiar para corrección con Claude** prepara el ensayo para una corrección completa.
 - **🎯 Reto recomendado**: según tu nivel y tus errores, la app te propone un tema con tiempos verbales y palabras obligatorias (se marcan en verde al usarlas) y los califica.
