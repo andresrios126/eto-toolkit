@@ -3,7 +3,7 @@
 
 import { getSetting, setSetting } from '../db.js';
 import { h, toast, setHeader } from '../ui.js';
-import { cloudConfigured, getSession, fetchRanking, publishScore, removeScore } from '../cloud.js';
+import { cloudConfigured, getSession, fetchRanking, publishScore, removeScore, refreshMyRank } from '../cloud.js';
 import { levelInfo } from '../game-state.js';
 
 const ENG_LEVELS = [[0, 'A1'], [150, 'A2'], [400, 'B1'], [800, 'B2'], [1400, 'C1'], [2200, 'C2']];
@@ -50,6 +50,7 @@ export async function rankingRoute(root, parts) {
     try {
       await publishScore().catch((e) => { if (e.status === 403) throw e; });
       const { top, total, me } = await fetchRanking(field);
+      refreshMyRank().catch(() => {});
       if (!top.length) {
         list.replaceChildren(h('p', { class: 'muted center' }, 'Todavía no hay nadie en el ranking.'));
         return;
@@ -81,7 +82,7 @@ export async function rankingRoute(root, parts) {
     const on = !sw.classList.contains('on');
     sw.classList.toggle('on', on); sw.setAttribute('aria-checked', String(on));
     await setSetting('rankingOff', !on);
-    try { if (on) await publishScore(); else await removeScore(); } catch (_) { /* se reintenta al sincronizar */ }
+    try { if (on) await publishScore(); else await removeScore(); await refreshMyRank(); } catch (_) { /* se reintenta al sincronizar */ }
     toast(on ? 'Apareces en el ranking' : 'Ya no apareces en el ranking');
     load();
   };

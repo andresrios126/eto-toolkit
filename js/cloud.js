@@ -108,7 +108,7 @@ export async function signIn(user, password) {
 }
 
 export function signOut() {
-  try { localStorage.removeItem(SESSION_KEY); localStorage.removeItem(STATUS_KEY); } catch (_) { /* nada */ }
+  try { localStorage.removeItem(SESSION_KEY); localStorage.removeItem(STATUS_KEY); localStorage.removeItem('eto-my-rank'); } catch (_) { /* nada */ }
   window.dispatchEvent(new CustomEvent('eto-cloud-status', { detail: {} }));
 }
 
@@ -287,7 +287,7 @@ export async function syncNow() {
       const size = JSON.stringify(merged).length;
       if (size > 900000) throw new Error('El progreso es demasiado grande para la nube.');
       await putRemote(merged);
-      publishScore().catch(() => { /* el ranking es opcional */ });
+      publishScore().then(() => refreshMyRank()).catch(() => { /* el ranking es opcional */ });
       setStatus({ syncing: false, pending: false, error: null, lastSync: new Date().toISOString() });
       if (changedLocal) window.dispatchEvent(new CustomEvent('eto-cloud-updated'));
       return true;
@@ -394,6 +394,27 @@ export async function fetchRanking(field) {
     me = { rank: above + 1, value: myVal };
   }
   return { top, total, me };
+}
+
+// Posición del usuario en el ranking del juego ETO (se guarda para mostrarla junto al engrane).
+const RANK_KEY = 'eto-my-rank';
+export function cachedRank() {
+  const r = readJSON(RANK_KEY);
+  const s = getSession();
+  return r && s && r.uid === s.uid ? r : null;
+}
+export async function refreshMyRank() {
+  const s = getSession();
+  if (!cloudConfigured() || !s) return null;
+  let r = { uid: s.uid, rank: null, total: null, at: Date.now() };
+  if (await rankingEnabled()) {
+    const xp = Math.round((await getSetting('game', {})).xp || 0);
+    const above = await countWhere({ fieldFilter: { field: { fieldPath: 'xp' }, op: 'GREATER_THAN', value: { integerValue: String(xp) } } });
+    r = { ...r, rank: above + 1, total: await countWhere(null) };
+  }
+  writeJSON(RANK_KEY, r);
+  window.dispatchEvent(new CustomEvent('eto-rank', { detail: r }));
+  return r;
 }
 
 // Para pruebas

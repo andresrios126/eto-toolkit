@@ -39,6 +39,8 @@ export function setHeader(title, backHash, subtitle) {
   // El botón de ajustes se oculta dentro de Ajustes y durante una lección.
   const gear = document.getElementById('settings');
   if (gear) gear.hidden = /^#\/(ajustes|apariencia|juego\/leccion|ingles\/(practica|examen))/.test(location.hash);
+  // Usuario y ranking junto al engrane: se ocultan durante lecciones y exámenes.
+  document.getElementById('me')?.classList.toggle('off', /^#\/(juego\/leccion|ingles\/(practica|examen))/.test(location.hash));
   const back = document.getElementById('back');
   if (backHash) {
     back.hidden = false;

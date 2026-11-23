@@ -786,3 +786,13 @@ a.chip.active { color: var(--on-accent); }
 .rank-name strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .rank-score { display: flex; flex-direction: column; align-items: flex-end; flex: none; }
 .rank-score small { color: var(--muted); font-size: 12px; font-weight: 700; }
+.me-badge {
+  flex: none; max-width: 42vw; min-height: 44px; padding: 4px 10px; border-radius: 12px;
+  display: flex; flex-direction: column; justify-content: center; align-items: flex-end; gap: 1px;
+  text-decoration: none; color: var(--text); background: var(--surface-2); border: 1px solid var(--border);
+  font-size: 13px; line-height: 1.2;
+}
+.me-badge[hidden], .me-badge.off { display: none; }
+.me-name { font-weight: 700; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.me-rank { font-weight: 800; color: var(--primary-ink); }
+.me-badge:active { transform: scale(.96); }

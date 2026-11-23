@@ -3,7 +3,7 @@
 import { db, exportBackup, importBackup, requestPersistence, getSetting, setSetting } from './db.js';
 import { rateControl } from './components.js';
 import { initLookup } from './lookup.js';
-import { initCloud, cloudConfigured, getSession, getStatus, signIn, signUp, signOut, syncNow } from './cloud.js';
+import { initCloud, cloudConfigured, getSession, getStatus, signIn, signUp, signOut, syncNow, cachedRank, refreshMyRank } from './cloud.js';
 import { pingUsage, fetchUsage, statsEnabled, setStatsEnabled } from './stats.js';
 import { APP_ICONS, iconPath, currentIcon, applyIcon, installUrl } from './icons.js';
 import { THEMES, CUSTOM_SWATCHES, applyTheme, currentTheme, saveTheme, themeVars, DEFAULT_THEME } from './themes.js';
@@ -23,7 +23,7 @@ import { TERMS } from './data/glossary.js';
 import { FAULTS } from './data/faults.js';
 import { DIAGRAMS } from './data/diagrams.js';
 
-const APP_VERSION = '3.10.0';
+const APP_VERSION = '3.11.0';
 
 const MODULES = [
   { key: 'juego', icon: '🎮', title: 'Juego', desc: 'Opción múltiple y escritura', cls: 'tile-game' },
@@ -407,6 +407,21 @@ async function route() {
   window.scrollTo(0, 0);
 }
 
+// Usuario y posición en el ranking, junto al botón de ajustes.
+function paintMe() {
+  const el = document.getElementById('me');
+  if (!el) return;
+  const s = cloudConfigured() && getSession();
+  el.hidden = !s;
+  if (!s) return;
+  const r = cachedRank();
+  el.replaceChildren(
+    h('span', { class: 'me-name' }, `👤 ${s.username}`),
+    h('span', { class: 'me-rank' }, r?.rank ? `🏆 #${r.rank}` : '🏆 —'),
+  );
+  el.title = r?.rank ? `${s.username}: puesto ${r.rank} de ${r.total} en el ranking` : s.username;
+}
+
 async function start() {
   // Tema: localStorage (rápido) o, si no existe, el guardado en la base de datos.
   let saved = null;
@@ -416,6 +431,8 @@ async function start() {
   requestPersistence();
   initLookup();
   initCloud();
+  paintMe();
+  ['eto-rank', 'eto-cloud-status'].forEach((ev) => window.addEventListener(ev, paintMe));
   pingUsage(APP_VERSION);
   window.addEventListener('online', () => pingUsage(APP_VERSION));
   // La sección 'Mis imágenes' se retiró: liberar el espacio de imágenes guardadas antes.

@@ -1,5 +1,8 @@
 # Historial de cambios
 
+## v3.11.0 — Usuario y ranking en la barra
+- Junto al botón ⚙️ aparece tu usuario y tu puesto en el ranking del juego ETO (👤 usuario · 🏆 #3). Al tocarlo abre el Ranking. Solo se muestra con cuenta iniciada y se oculta durante lecciones y exámenes.
+
 ## v3.10.0 — Ranking de usuarios
 - Nuevo módulo **🏆 Ranking** en el inicio: top 10 de usuarios con cuenta por XP del **⚡ Juego ETO** o de **🇬🇧 Inglés**, con medallas, nivel y "tú" resaltado. Si no estás en el top 10, muestra tu posición.
 - Sin cuenta no apareces: el progreso queda solo en el teléfono. Interruptor "Aparecer en el ranking" para salir cuando quieras.
