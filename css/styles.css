@@ -737,4 +737,9 @@ select.input { appearance: auto; }
 .tile-icon .flag { width: 40px; height: 20px; border-radius: 3px; box-shadow: 0 1px 3px rgba(0, 0, 0, .25); }
 .hero-flag .flag { width: 44px; height: 22px; border-radius: 3px; display: block; box-shadow: 0 1px 4px rgba(0, 0, 0, .3); }
 
+.hint-label { display: block; font-size: 13px; font-weight: 800; color: var(--accent); margin-bottom: 2px; }
+.learn-card { padding: 10px 12px; border-radius: 12px; background: var(--surface); color: var(--text); border: 1px solid var(--border); }
+.learn-card p { margin: 0 0 4px; }
+.learn-card p:last-child { margin: 0; }
+
 [hidden] { display: none !important; }

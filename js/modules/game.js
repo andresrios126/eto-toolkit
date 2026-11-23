@@ -326,6 +326,17 @@ async function customFaults() {
   } catch (_) { return []; }
 }
 
+
+// Agrega a una pregunta de vocabulario la explicación (antes de responder) y la ficha (después).
+function withLearn(q, t) {
+  if (!q) return q;
+  q.learn = { en: t.en, es: t.es, def: t.def, ex: t.ex, cat: GCATS[t.cat] || '' };
+  // En los juegos de escribir / ordenar letras / dictado, mostrar qué es la palabra como pista.
+  if (q.mode && t.def && !q.text) { q.text = t.def; q.textLang = 'en'; q.hintDef = true; }
+  if (q.mode && !q.sub && GCATS[t.cat]) q.sub = `📂 ${GCATS[t.cat]}`;
+  return q;
+}
+
 // Construye las preguntas de una lección.
 async function buildQuestions(lesson) {
   const out = [];
@@ -340,14 +351,14 @@ async function buildQuestions(lesson) {
       if (out.length >= n) break;
       // ~30 % de las preguntas de vocabulario son de escribir
       const order = Math.random() < 0.3 ? [...shuffle(wgens), ...shuffle(gens)] : shuffle(gens);
-      for (const gen of order) { const q = gen(t, terms); if (q) { tryAdd(q); break; } }
+      for (const gen of order) { const q = withLearn(gen(t, terms), t); if (q) { tryAdd(q); break; } }
     }
   };
   const fromWriting = (pool, n, modes) => {
     for (const t of shuffle(pool)) {
       if (out.length >= n) break;
       const gens = (t.cat === 'phrases' ? ['phraseGap'] : modes.filter((m) => m !== 'phraseGap')).filter((m) => modes.includes(m));
-      for (const m of shuffle(gens)) { const q = W[m](t); if (q) { tryAdd(q); break; } }
+      for (const m of shuffle(gens)) { const q = withLearn(W[m](t), t); if (q) { tryAdd(q); break; } }
     }
   };
   const fromQuestions = (pool, n) => {
@@ -612,7 +623,7 @@ export async function runLesson(root, opts) {
       q.sub ? h('p', { class: 'muted small' }, q.sub) : null,
       q.listen ? h('button', { class: 'listen-big', onclick: () => speak(q.say) }, '🔊', h('span', {}, 'Escuchar')) : null,
       q.big ? h('div', { class: 'q-big-row' }, sayBtn, h('p', { class: `q-big ${q.small ? 'smaller' : ''}` }, q.big)) : null,
-      q.text ? h('div', { class: 'q-big-row' }, q.big || q.listen ? null : sayBtn, h('p', { class: 'q-text' }, q.text)) : null,
+      q.text ? h('div', { class: 'q-big-row' }, q.big || q.listen ? null : sayBtn, h('p', { class: 'q-text' }, q.hintDef ? h('span', { class: 'hint-label' }, '💡 ¿Qué es? ') : null, q.text)) : null,
     ];
 
     let interaction;
@@ -754,6 +765,11 @@ export async function runLesson(root, opts) {
           q.say ? h('button', { class: 'say-btn small', 'aria-label': 'Escuchar', onclick: () => speak(q.say) }, '🔊') : null,
         ),
         note ? h('p', {}, note) : null,
+        q.learn ? h('div', { class: 'learn-card' },
+          h('p', {}, h('b', {}, q.learn.en), ` = ${q.learn.es}`),
+          q.learn.def ? h('p', { class: 'small' }, q.learn.def) : null,
+          q.learn.ex ? h('p', { class: 'small example' }, `“${q.learn.ex}”`) : null,
+        ) : null,
         ok ? null : h('p', {}, 'Respuesta correcta: ', h('b', {}, q.correctText)),
         h('button', { class: `btn btn-xl ${ok ? 'btn-ok' : 'btn-danger-solid'}`, onclick: () => {
           stop();
