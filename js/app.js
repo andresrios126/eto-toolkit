@@ -21,7 +21,7 @@ import { TERMS } from './data/glossary.js';
 import { FAULTS } from './data/faults.js';
 import { DIAGRAMS } from './data/diagrams.js';
 
-const APP_VERSION = '3.6.0';
+const APP_VERSION = '3.6.1';
 
 const MODULES = [
   { key: 'juego', icon: '🎮', title: 'Juego', desc: 'Opción múltiple y escritura', cls: 'tile-game' },
@@ -37,7 +37,7 @@ const root = document.getElementById('app');
 let cleanup = null;
 
 async function viewHome() {
-  setHeader('ETO Toolkit', null);
+  setHeader('ETO Toolkit', null, 'by Eng. Andres Rios');
   const game = await getGame();
   const next = nextLesson(game);
   root.replaceChildren(

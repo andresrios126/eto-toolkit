@@ -32,8 +32,10 @@ export function toast(msg) {
   toastTimer = setTimeout(() => el.classList.remove('show'), 2200);
 }
 
-export function setHeader(title, backHash) {
-  document.getElementById('title').textContent = title;
+export function setHeader(title, backHash, subtitle) {
+  const t = document.getElementById('title');
+  t.textContent = title;
+  if (subtitle) t.append(document.createElement('br'), Object.assign(document.createElement('small'), { textContent: subtitle }));
   // El botón de ajustes se oculta dentro de Ajustes y durante una lección.
   const gear = document.getElementById('settings');
   if (gear) gear.hidden = /^#\/(ajustes|apariencia|juego\/leccion|ingles\/(practica|examen))/.test(location.hash);

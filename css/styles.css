@@ -66,7 +66,8 @@ body {
   -webkit-backdrop-filter: blur(12px);
   border-bottom: 1px solid var(--border);
 }
-.topbar h1 { flex: 1; margin: 0; font-size: 20px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.topbar h1 { flex: 1; margin: 0; font-size: 20px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.15; }
+.topbar h1 small { font-size: 12px; font-weight: 600; color: var(--muted); letter-spacing: .02em; }
 .gear {
   flex: none; width: 44px; height: 44px; border-radius: 12px;
   display: grid; place-items: center; text-decoration: none; font-size: 22px;
