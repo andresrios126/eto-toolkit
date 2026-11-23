@@ -1,5 +1,8 @@
 # Historial de cambios
 
+## v3.8.1 — Ensayos de inglés generales
+- Los 24 temas de ensayo ahora son de inglés general (rutina, vacaciones, comida, salud, redes sociales, IA, reseñas, ciudad o campo, cambio climático, privacidad…), sin temas de ETO ni del mar, para que cualquier persona pueda usar la app de inglés.
+
 ## v3.8.0 — Contador de usuarios
 - ⚙️ Ajustes → **📊 Usuarios de la app**: cuántos dispositivos han usado la app, activos en 7 y 30 días, sin usarla hace más de 30 días, y cuántos tienen cuenta.
 - Anónimo: cada dispositivo guarda solo un id al azar, la fecha del primer y último uso (una vez al día), si tiene cuenta y la versión. Se puede desactivar ("Contar este dispositivo"), lo que borra su registro.

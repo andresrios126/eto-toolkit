@@ -90,7 +90,8 @@ async function viewList(root, level) {
   const lvl = ESSAY_LEVELS.find((l) => l.level === level) || ESSAY_LEVELS.find((l) => l.level === mine);
   setHeader('Ensayos', '#/ingles');
   const best = p.essayBest || {};
-  const hist = (p.essays || []).slice(0, 10);
+  const known = (x) => ESSAYS.some((e) => e.id === x.id);
+  const hist = (p.essays || []).filter(known).slice(0, 10);
 
   let ch = loadChallenge();
   if (!ch || ch.level !== lvl.level || !ESSAYS.some((e) => e.id === ch.id)) { ch = makeChallenge(p, lvl.level); storeChallenge(ch); }
@@ -291,9 +292,10 @@ async function viewSaved(root, at) {
 
 // Resumen para la pantalla principal de inglés.
 export function essaySummary(p) {
-  const list = p.essays || [];
+  const list = (p.essays || []).filter((x) => ESSAYS.some((e) => e.id === x.id));
   if (!list.length) return 'Escribe y recibe calificación';
-  return `${Object.keys(p.essayBest || {}).length} temas · última nota ${list[0].score}`;
+  const done = Object.keys(p.essayBest || {}).filter((id) => ESSAYS.some((e) => e.id === id)).length;
+  return done ? `${done} temas · última nota ${list[0].score}` : 'Escribe y recibe calificación';
 }
 
 export function essayRoute(root, parts) {
