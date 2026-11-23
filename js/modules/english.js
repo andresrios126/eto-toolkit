@@ -1,4 +1,4 @@
-// Sub-app de inglés general: tiempos verbales, verbos regulares e irregulares.
+// Sub-app de inglés general: tiempos verbales, verbos regulares e irregulares y preposiciones.
 // Independiente del contenido ETO: su propio progreso (XP y nivel A1–C2).
 
 import { TENSES, TENSE_GROUPS, IRREGULAR, REGULAR, REGULAR_RULES, ED_SOUNDS, VERB_FORMS, ES_FORMS } from '../data/english.js';
@@ -8,6 +8,13 @@ import { h, toast, setHeader, UK_FLAG } from '../ui.js';
 import { rateControl } from '../components.js';
 import { runLesson, mc, makeMask, shuffle, pick, checkTyped } from './game.js';
 import { essayRoute, essaySummary } from './essay.js';
+import { PREPOSITIONS, PREP_GROUP } from '../data/prepositions.js';
+
+// Todos los temas de gramática con ficha (tiempos verbales + preposiciones).
+const TOPICS = [...TENSES, ...PREPOSITIONS];
+const findTopic = (id) => TOPICS.find((x) => x.id === id);
+const isPrep = (t) => t.group === 'prep';
+const familyOf = (t) => (isPrep(t) ? PREPOSITIONS : TENSES);
 
 const LEVELS = [[0, 'A1'], [150, 'A2'], [400, 'B1'], [800, 'B2'], [1400, 'C1'], [2200, 'C2']];
 
@@ -61,11 +68,11 @@ function fromExercise(t, ex, mode) {
   const learn = { en: say, es, def: tenseInfo(t) };
   if (mode === 'type') {
     return withLearn(typeQuestion({
-      prompt: 'Escribe el verbo en la forma correcta', text: `${sentence}  (${verb})`, sub: `🇪🇸 ${es}`,
+      prompt: isPrep(t) ? 'Escribe la preposición correcta' : 'Escribe el verbo en la forma correcta', text: `${sentence}  (${verb})`, sub: `🇪🇸 ${es}`,
       answers, say, kind: `✍️ ${t.name}`,
     }), learn);
   }
-  return withLearn(mc('Elige la forma correcta', answers[0], wrong, {
+  return withLearn(mc(isPrep(t) ? 'Elige la preposición correcta' : 'Elige la forma correcta', answers[0], wrong, {
     text: `${sentence}  (${verb})`, textLang: 'en', sub: `🇪🇸 ${es}`, say, sayAfter: true, kind: `🔤 ${t.name}`, optLang: 'en',
   }), learn);
 }
@@ -82,7 +89,7 @@ function whichTense(t) {
 
 function translate(t) {
   const [en, es] = pick(t.examples);
-  const pool = TENSES.flatMap((x) => x.examples.map((e) => e[1])).filter((x) => x !== es);
+  const pool = familyOf(t).flatMap((x) => x.examples.map((e) => e[1])).filter((x) => x !== es);
   return withLearn(mc('¿Qué significa?', es, shuffle(pool).slice(0, 3), { text: en, textLang: 'en', say: en, kind: '🇬🇧 → 🇪🇸', small: true }),
     { en, es, def: tenseInfo(t) });
 }
@@ -93,7 +100,8 @@ function tenseQuestions(t, n = 10) {
   exs.forEach((ex, i) => out.push(fromExercise(t, ex, i % 2 === 0 ? 'type' : 'mc')));
   // repetir ejercicios en el otro modo para completar
   shuffle(t.exercises).forEach((ex, i) => { if (out.length < n - 3) out.push(fromExercise(t, ex, i % 2 === 0 ? 'mc' : 'type')); });
-  out.push(whichTense(t), whichTense(t), translate(t));
+  if (isPrep(t)) out.push(translate(t), translate(t), translate(t));
+  else out.push(whichTense(t), whichTense(t), translate(t));
   return shuffle(out).slice(0, n);
 }
 
@@ -174,22 +182,23 @@ const PRACTICE = {
   quetiempo: { title: '¿Qué tiempo es?', build: () => shuffle(TENSES).slice(0, 10).map(whichTense) },
   irregulares: { title: 'Verbos irregulares', build: () => irregularQuestions(10) },
   regulares: { title: 'Verbos regulares', build: () => regularQuestions(10) },
+  preposiciones: { title: 'Preposiciones', build: () => shuffle(PREPOSITIONS.flatMap((t) => shuffle(t.exercises).slice(0, 2).map((ex) => fromExercise(t, ex, pick(['type', 'mc']))))).slice(0, 10) },
 };
 
 
 // ---------- Exámenes por nivel ----------
 
 export const EXAMS = [
-  { level: 'A1', title: 'Examen A1 · Básico', unlock: 0, topics: ['present-simple', 'present-continuous', 'past-simple', 'modals', 'irregulares'] },
-  { level: 'A2', title: 'Examen A2 · Elemental', unlock: 150, topics: ['past-continuous', 'future-will', 'going-to', 'used-to', 'present-perfect', 'irregulares'] },
-  { level: 'B1', title: 'Examen B1 · Intermedio', unlock: 400, topics: ['present-perfect', 'present-perfect-continuous', 'past-perfect', 'conditionals', 'passive', 'modals'] },
+  { level: 'A1', title: 'Examen A1 · Básico', unlock: 0, topics: ['present-simple', 'present-continuous', 'past-simple', 'modals', 'irregulares', 'prep-place', 'prep-time'] },
+  { level: 'A2', title: 'Examen A2 · Elemental', unlock: 150, topics: ['past-continuous', 'future-will', 'going-to', 'used-to', 'present-perfect', 'irregulares', 'prep-to', 'prep-for', 'prep-media-arrive'] },
+  { level: 'B1', title: 'Examen B1 · Intermedio', unlock: 400, topics: ['present-perfect', 'present-perfect-continuous', 'past-perfect', 'conditionals', 'passive', 'modals', 'prep-of-to', 'prep-verbs'] },
   { level: 'B2', title: 'Examen B2 · Intermedio alto', unlock: 800, topics: ['past-perfect-continuous', 'future-continuous', 'future-perfect', 'conditionals', 'passive', 'regulares'] },
   { level: 'C1', title: 'Examen C1 · Avanzado', unlock: 1400, topics: ['future-perfect-continuous', 'past-perfect-continuous', 'future-perfect', 'present-perfect-continuous', 'conditionals', 'passive'] },
 ];
 const EXAM_SIZE = 20;
 const PASS = 70;
 
-const topicName = (k) => (k === 'irregulares' ? 'Verbos irregulares' : k === 'regulares' ? 'Verbos regulares' : TENSES.find((t) => t.id === k)?.name || k);
+const topicName = (k) => (k === 'irregulares' ? 'Verbos irregulares' : k === 'regulares' ? 'Verbos regulares' : findTopic(k)?.name || k);
 const topicHref = (k) => (k === 'irregulares' || k === 'regulares' ? `#/ingles/${k}` : `#/ingles/t/${k}`);
 
 function examQuestions(exam) {
@@ -200,9 +209,9 @@ function examQuestions(exam) {
     if (k === 'irregulares') qs = irregularQuestions(per);
     else if (k === 'regulares') qs = regularQuestions(per);
     else {
-      const t = TENSES.find((x) => x.id === k);
+      const t = findTopic(k);
       qs = shuffle(t.exercises).map((ex, i) => fromExercise(t, ex, i % 2 ? 'mc' : 'type'));
-      qs.push(whichTense(t));
+      if (!isPrep(t)) qs.push(whichTense(t));
       qs = shuffle(qs).slice(0, per);
     }
     qs.forEach((q) => out.push({ ...q, topic: k }));
@@ -266,7 +275,7 @@ function reviewCard(k, n) {
       ...exs.map((v) => quickExercise(`Past of "${v[0]}": ___`, irr ? v[3] : v[2], v[1], '')),
     );
   }
-  const t = TENSES.find((x) => x.id === k);
+  const t = findTopic(k);
   if (!t) return null;
   return h('section', { class: 'card review-topic' },
     h('div', { class: 'row-between' }, h('h2', {}, `${n}. ${t.name}`), h('a', { class: 'link', href: topicHref(k) }, 'Ver tema →')),
@@ -288,8 +297,8 @@ function reviewQuestions(exam) {
     if (k === 'irregulares') qs = irregularQuestions(2);
     else if (k === 'regulares') qs = regularQuestions(2);
     else {
-      const t = TENSES.find((x) => x.id === k);
-      qs = [fromExercise(t, pick(t.exercises), 'mc'), whichTense(t)];
+      const t = findTopic(k);
+      qs = [fromExercise(t, pick(t.exercises), 'mc'), isPrep(t) ? fromExercise(t, pick(t.exercises), 'type') : whichTense(t)];
     }
     out.push(...qs);
   }
@@ -471,8 +480,8 @@ async function viewHome(root) {
   setHeader('Inglés', '#/');
   const p = await getProgress();
   const lv = level(p.xp);
-  const done = TENSES.filter((t) => starsOf(p, t.id)).length;
-  const next = TENSES.find((t) => !starsOf(p, t.id));
+  const done = TOPICS.filter((t) => starsOf(p, t.id)).length;
+  const next = TOPICS.find((t) => !starsOf(p, t.id));
 
   const tenseRow = (t) => h('a', { class: 'term-row', href: `#/ingles/t/${t.id}` },
     h('span', { class: 'term-main' }, h('strong', {}, t.name), h('span', { class: 'muted' }, t.es)),
@@ -484,8 +493,8 @@ async function viewHome(root) {
         h('span', { class: 'stat-val' }, '⭐ ', h('b', {}, p.xp)), h('span', { class: 'stat-label' }, 'XP')),
       h('button', { class: 'stat', onclick: () => toast(lv.next ? `Nivel ${lv.name} (A1 → C2). Te faltan ${lv.toNext} XP para ${lv.next}.` : `Nivel máximo: ${lv.name}`) },
         h('span', { class: 'stat-val eng-lvl' }, h('b', {}, lv.name)), h('span', { class: 'stat-label' }, 'Nivel')),
-      h('button', { class: 'stat', onclick: () => toast(`Has practicado ${done} de ${TENSES.length} temas de gramática.`) },
-        h('span', { class: 'stat-val' }, '📚 ', h('b', {}, `${done}/${TENSES.length}`)), h('span', { class: 'stat-label' }, 'Temas')),
+      h('button', { class: 'stat', onclick: () => toast(`Has practicado ${done} de ${TOPICS.length} temas de gramática.`) },
+        h('span', { class: 'stat-val' }, '📚 ', h('b', {}, `${done}/${TOPICS.length}`)), h('span', { class: 'stat-label' }, 'Temas')),
     ),
     h('a', { class: 'hero eng-hero', href: next ? `#/ingles/t/${next.id}` : '#/ingles/practica/mix' },
       h('span', { class: 'hero-bolt hero-flag', 'aria-hidden': 'true', html: UK_FLAG }),
@@ -499,6 +508,7 @@ async function viewHome(root) {
     h('div', { class: 'grid2' },
       h('a', { class: 'btn btn-primary', href: '#/ingles/practica/mix' }, '⚡ Mixta'),
       h('a', { class: 'btn btn-secondary', href: '#/ingles/practica/quetiempo' }, '🕵️ ¿Qué tiempo es?'),
+      h('a', { class: 'btn btn-secondary', href: '#/ingles/practica/preposiciones' }, '📍 Preposiciones'),
     ),
     h('h2', { class: 'label' }, '✍️ Escritura'),
     h('div', { class: 'list' },
@@ -519,16 +529,19 @@ async function viewHome(root) {
       h('h2', { class: 'label' }, `📘 ${title}`),
       h('div', { class: 'list' }, ...TENSES.filter((t) => t.group === g).map(tenseRow)),
     ]),
+    h('h2', { class: 'label' }, `📍 ${PREP_GROUP}`),
+    h('div', { class: 'list' }, ...PREPOSITIONS.map(tenseRow)),
   );
 }
 
 function viewTense(root, id) {
-  const t = TENSES.find((x) => x.id === id);
+  const t = findTopic(id);
   if (!t) { location.hash = '#/ingles'; return; }
   setHeader(t.name, '#/ingles');
-  const i = TENSES.indexOf(t);
-  const prev = TENSES[i - 1];
-  const next = TENSES[i + 1];
+  const fam = familyOf(t);
+  const i = fam.indexOf(t);
+  const prev = fam[i - 1];
+  const next = fam[i + 1];
 
   root.replaceChildren(
     h('section', { class: 'card' },
@@ -545,7 +558,7 @@ function viewTense(root, id) {
       h('p', { class: 'note' }, '💡 ', t.tip),
     ),
     h('section', { class: 'card' },
-      h('h2', { class: 'label' }, '⏰ Palabras clave'),
+      h('h2', { class: 'label' }, isPrep(t) ? '📌 Frases clave' : '⏰ Palabras clave'),
       h('div', { class: 'chips wrap' }, ...t.signals.map((s) => h('button', { class: 'chip', onclick: () => speak(s) }, s))),
     ),
     h('section', { class: 'card' },
@@ -670,7 +683,7 @@ function viewRegular(root) {
 }
 
 function viewPractice(root, key) {
-  const t = TENSES.find((x) => x.id === key);
+  const t = findTopic(key);
   const def = t ? { title: t.name, build: () => tenseQuestions(t) } : PRACTICE[key];
   if (!def) { location.hash = '#/ingles'; return; }
   const back = t ? `#/ingles/t/${t.id}` : key === 'irregulares' || key === 'regulares' ? `#/ingles/${key}` : '#/ingles';

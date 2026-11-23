@@ -24,7 +24,7 @@ import { TERMS } from './data/glossary.js';
 import { FAULTS } from './data/faults.js';
 import { DIAGRAMS } from './data/diagrams.js';
 
-const APP_VERSION = '3.12.0';
+const APP_VERSION = '3.13.0';
 
 const MODULES = [
   { key: 'juego', icon: '🎮', title: 'Juego', desc: 'Opción múltiple y escritura', cls: 'tile-game' },
@@ -33,7 +33,7 @@ const MODULES = [
   { key: 'glosario', icon: '📖', title: 'Glosario', desc: `${TERMS.length} términos EN ↔ ES`, cls: 'tile-gloss' },
   { key: 'fallas', icon: '🔧', title: 'Fallas', desc: `${FAULTS.length} casos de diagnóstico`, cls: 'tile-fault' },
   { key: 'guia', icon: '🧭', title: 'Guía visual', desc: `${DIAGRAMS.length} diagramas de referencia`, cls: 'tile-guide' },
-  { key: 'ingles', icon: '', svg: UK_FLAG, title: 'Inglés', desc: 'Tiempos verbales y verbos', cls: 'tile-eng' },
+  { key: 'ingles', icon: '', svg: UK_FLAG, title: 'Inglés', desc: 'Tiempos verbales, verbos y preposiciones', cls: 'tile-eng' },
   { key: 'ranking', icon: '🏆', title: 'Ranking', desc: 'Top 10 de usuarios', cls: 'tile-rank' },
 ];
 
