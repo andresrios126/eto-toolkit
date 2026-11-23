@@ -71,7 +71,7 @@ service cloud.firestore {
 | Preguntas K-Pos | `js/data/questions-kpos.js` |
 | Curso K-Pos (unidades y evaluación) | `js/data/kpos-course.js` |
 | Temas de gramática, ejercicios y verbos de inglés | `js/data/english.js` |
-| Temas de ensayo por nivel | `js/data/essays.js` |
+| Temas de ensayo por nivel | `js/data/essays.js` (general) y `js/data/essays-maritime.js` (marítimo) |
 | Reglas del corrector de ensayos | `js/modules/essay-grader.js` (lista `RULES`) |
 | Palabras del diccionario del globo | `js/data/dictionary.js` |
 | Temas de color | `js/themes.js` |

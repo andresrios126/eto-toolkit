@@ -31,7 +31,14 @@ export const CHALLENGE = {
   A1: { tenses: 2, words: 3 }, A2: { tenses: 2, words: 4 }, B1: { tenses: 3, words: 5 }, B2: { tenses: 3, words: 6 }, C1: { tenses: 4, words: 7 },
 };
 
-export const ESSAYS = [
+import { MARITIME_ESSAYS } from './essays-maritime.js';
+
+export const TRACKS = [
+  { key: 'general', label: '🌎 Inglés general' },
+  { key: 'maritime', label: '⚓ Inglés marítimo' },
+];
+
+const GENERAL_ESSAYS = [
   // ---------- A1 ----------
   { id: 'a1-me', level: 'A1', title: 'About me', es: 'Preséntate: quién eres, de dónde eres, a qué te dedicas y qué te gusta.',
     ideas: ['Tu nombre y tu edad (I am … years old).', 'Tu trabajo o tus estudios.', 'Qué te gusta y qué no te gusta.'], use: ['present-simple'],
@@ -114,3 +121,5 @@ export const ESSAYS = [
     ideas: ['Our data has been increasingly collected…', 'Ejemplos de riesgos (filtraciones, publicidad).', 'Para 2030, qué se habrá implementado.'], use: ['present-perfect-continuous', 'passive', 'future-perfect'],
     vocab: ['personal data', 'surveillance', 'consent', 'breach', 'algorithms', 'awareness', 'trade-off', 'regulate'] },
 ];
+
+export const ESSAYS = [...GENERAL_ESSAYS.map((e) => ({ ...e, track: 'general' })), ...MARITIME_ESSAYS];

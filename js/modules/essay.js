@@ -1,6 +1,6 @@
 // Escritura: ensayos por nivel con calificación automática y recomendaciones de estudio.
 
-import { ESSAYS, ESSAY_LEVELS, LEVEL_TENSES, CHALLENGE, CONNECTORS } from '../data/essays.js';
+import { ESSAYS, ESSAY_LEVELS, LEVEL_TENSES, CHALLENGE, CONNECTORS, TRACKS } from '../data/essays.js';
 import { TENSES } from '../data/english.js';
 import { getSetting, setSetting } from '../db.js';
 import { h, toast, setHeader } from '../ui.js';
@@ -45,10 +45,15 @@ function weakTenses(p) {
   return Object.entries(n).sort((a, b) => b[1] - a[1]).map(([k]) => k);
 }
 
-function makeChallenge(p, level, avoidId) {
+const TRACK_KEY = 'eto-essay-track';
+function getTrack() { try { return localStorage.getItem(TRACK_KEY) === 'maritime' ? 'maritime' : 'general'; } catch (_) { return 'general'; } }
+function setTrack(t) { try { localStorage.setItem(TRACK_KEY, t); } catch (_) { /* sin almacenamiento */ } }
+const listHref = (level, track) => `#/ingles/ensayos/${level}/${track || 'general'}`;
+
+function makeChallenge(p, level, track, avoidId) {
   const cfg = CHALLENGE[level];
   const best = p.essayBest || {};
-  const pool = ESSAYS.filter((e) => e.level === level && e.id !== avoidId);
+  const pool = ESSAYS.filter((e) => e.level === level && e.track === track && e.id !== avoidId);
   // Primero temas que no has escrito; luego los de nota más baja.
   const fresh = shuffle(pool.filter((e) => best[e.id] == null));
   const essay = fresh[0] || [...pool].sort((a, b) => best[a.id] - best[b.id])[0];
@@ -64,7 +69,7 @@ function makeChallenge(p, level, avoidId) {
   const words = shuffle(essay.vocab).slice(0, cfg.words - (['B2', 'C1'].includes(level) ? 1 : 0));
   if (['B2', 'C1'].includes(level)) words.push(shuffle(CONNECTORS[level])[0]);
   reasons.unshift(best[essay.id] == null ? 'es un tema que aún no has escrito' : `tu mejor nota en este tema es ${best[essay.id]}`);
-  return { id: essay.id, level, use, words, why: `Te lo recomiendo porque ${reasons.join(' y ')}.` };
+  return { id: essay.id, level, track, use, words, why: `Te lo recomiendo porque ${reasons.join(' y ')}.` };
 }
 
 function challengeCard(c, onOther) {
@@ -84,7 +89,9 @@ function challengeCard(c, onOther) {
 
 // ---------- Lista de temas ----------
 
-async function viewList(root, level) {
+async function viewList(root, level, trackParam) {
+  const track = TRACKS.some((t) => t.key === trackParam) ? trackParam : getTrack();
+  setTrack(track);
   const p = await getProgress();
   const mine = userLevel(p.xp);
   const lvl = ESSAY_LEVELS.find((l) => l.level === level) || ESSAY_LEVELS.find((l) => l.level === mine);
@@ -94,9 +101,9 @@ async function viewList(root, level) {
   const hist = (p.essays || []).filter(known).slice(0, 10);
 
   let ch = loadChallenge();
-  if (!ch || ch.level !== lvl.level || !ESSAYS.some((e) => e.id === ch.id)) { ch = makeChallenge(p, lvl.level); storeChallenge(ch); }
+  if (!ch || ch.level !== lvl.level || ch.track !== track || !ESSAYS.some((e) => e.id === ch.id)) { ch = makeChallenge(p, lvl.level, track); storeChallenge(ch); }
   const slot = h('div', {});
-  const paint = () => slot.replaceChildren(challengeCard(ch, () => { ch = makeChallenge(p, lvl.level, ch.id); storeChallenge(ch); saveDraft('reto', ''); paint(); }));
+  const paint = () => slot.replaceChildren(challengeCard(ch, () => { ch = makeChallenge(p, lvl.level, track, ch.id); storeChallenge(ch); saveDraft('reto', ''); paint(); }));
   paint();
 
   root.replaceChildren(
@@ -104,8 +111,12 @@ async function viewList(root, level) {
       h('p', {}, '✍️ Escribe un ensayo en inglés sobre el tema que elijas. Al terminar te califico de 0 a 100, te marco los errores y te digo qué estudiar.'),
       h('p', { class: 'muted small' }, `Tu nivel actual: ${mine}. Puedes practicar cualquier nivel.`),
     ),
+    h('div', { class: 'grid2' }, ...TRACKS.map((t) => h('a', {
+      class: `btn ${t.key === track ? 'btn-primary' : 'btn-secondary'}`, href: listHref(lvl.level, t.key),
+    }, t.label))),
+    track === 'maritime' ? h('p', { class: 'muted small' }, '⚓ Temas de la vida a bordo, el trabajo en máquinas y electricidad, seguridad y reportes.') : null,
     h('div', { class: 'chips' }, ...ESSAY_LEVELS.map((l) => h('a', {
-      class: `chip${l.level === lvl.level ? ' active' : ''}`, href: `#/ingles/ensayos/${l.level}`,
+      class: `chip${l.level === lvl.level ? ' active' : ''}`, href: listHref(l.level, track),
     }, l.level === mine ? `${l.level} ⭐` : l.level))),
     h('section', { class: 'card' },
       h('div', { class: 'row-between' }, h('strong', {}, `Nivel ${lvl.level}`), h('span', { class: 'tag tag-accent' }, `${lvl.min}–${lvl.max} palabras`)),
@@ -113,7 +124,7 @@ async function viewList(root, level) {
     ),
     slot,
     h('h2', { class: 'label' }, '📝 O elige un tema libre'),
-    h('div', { class: 'list' }, ...ESSAYS.filter((e) => e.level === lvl.level).map((e) => h('a', { class: 'term-row', href: `#/ingles/ensayo/${e.id}` },
+    h('div', { class: 'list' }, ...ESSAYS.filter((e) => e.level === lvl.level && e.track === track).map((e) => h('a', { class: 'term-row', href: `#/ingles/ensayo/${e.id}` },
       h('span', { class: 'term-main' }, h('strong', {}, e.title), h('span', { class: 'muted' }, e.es)),
       best[e.id] != null ? h('span', { class: `essay-badge ${scoreClass(best[e.id])}` }, best[e.id])
         : loadDraft(e.id) ? h('span', { class: 'tag' }, 'borrador') : h('span', {}, '›')))),
@@ -121,7 +132,7 @@ async function viewList(root, level) {
     hist.length ? h('div', { class: 'list' }, ...hist.map((x) => {
       const e = ESSAYS.find((y) => y.id === x.id);
       return h('a', { class: 'term-row', href: `#/ingles/ensayo-r/${x.at}` },
-        h('span', { class: 'term-main' }, h('strong', {}, `${x.challenge ? '🎯 ' : ''}${e?.title || x.id}`), h('span', { class: 'muted' }, `${x.level} · ${x.words} palabras · ${fmtDate(x.at)}`)),
+        h('span', { class: 'term-main' }, h('strong', {}, `${x.challenge ? '🎯 ' : ''}${e?.track === 'maritime' ? '⚓ ' : ''}${e?.title || x.id}`), h('span', { class: 'muted' }, `${x.level} · ${x.words} palabras · ${fmtDate(x.at)}`)),
         h('span', { class: `essay-badge ${scoreClass(x.score)}` }, x.score));
     })) : null,
   );
@@ -135,7 +146,7 @@ function viewWrite(root, id, prefill, challenge) {
   const essay = challenge ? { ...base, use: challenge.use, words: challenge.words } : base;
   const dKey = challenge ? 'reto' : id;
   const L = ESSAY_LEVELS.find((l) => l.level === essay.level);
-  setHeader(challenge ? `🎯 Reto ${essay.level}` : `Ensayo ${essay.level}`, `#/ingles/ensayos/${essay.level}`);
+  setHeader(challenge ? `🎯 Reto ${essay.level}` : `Ensayo ${essay.level}`, listHref(essay.level, essay.track));
 
   const area = h('textarea', {
     class: 'input textarea essay-area', rows: 12, lang: 'en', spellcheck: 'true', autocapitalize: 'sentences',
@@ -235,7 +246,7 @@ async function copyText(s) {
 }
 
 function renderResult(root, essay, entry, r, gain) {
-  setHeader('Resultado', `#/ingles/ensayos/${essay.level}`);
+  setHeader('Resultado', listHref(essay.level, essay.track));
   const cls = scoreClass(r.score);
   root.replaceChildren(
     h('section', { class: 'card center' },
@@ -276,7 +287,7 @@ function renderResult(root, essay, entry, r, gain) {
       history.replaceState(null, '', `#/ingles/ensayo/${essay.id}`); viewWrite(root, essay.id, entry.text);
     } }, '✍️ Corregir y volver a calificar'),
     h('button', { class: 'btn btn-secondary', onclick: async () => toast(await copyText(claudePrompt(essay, entry.text)) ? '📋 Copiado. Pégalo en la app de Claude.' : 'No se pudo copiar') }, '📋 Copiar para corrección con Claude'),
-    h('a', { class: 'btn btn-ghost', href: `#/ingles/ensayos/${essay.level}` }, 'Elegir otro tema'),
+    h('a', { class: 'btn btn-ghost', href: listHref(essay.level, essay.track) }, 'Elegir otro tema'),
   );
   window.scrollTo(0, 0);
 }
@@ -306,5 +317,5 @@ export function essayRoute(root, parts) {
   }
   if (parts[0] === 'ensayo' && parts[1]) return viewWrite(root, parts[1]);
   if (parts[0] === 'ensayo-r' && parts[1]) return viewSaved(root, parts[1]);
-  return viewList(root, parts[1]);
+  return viewList(root, parts[1], parts[2]);
 }

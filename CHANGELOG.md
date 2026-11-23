@@ -1,5 +1,8 @@
 # Historial de cambios
 
+## v3.9.0 — Ensayos: inglés general e inglés marítimo
+- Ensayos se divide en **🌎 Inglés general** (24 temas para cualquier persona) y **⚓ Inglés marítimo** (24 temas de la vida a bordo, trabajo en máquinas y electricidad, seguridad y reportes). El reto recomendado se genera dentro del apartado elegido.
+
 ## v3.8.1 — Ensayos de inglés generales
 - Los 24 temas de ensayo ahora son de inglés general (rutina, vacaciones, comida, salud, redes sociales, IA, reseñas, ciudad o campo, cambio climático, privacidad…), sin temas de ETO ni del mar, para que cualquier persona pueda usar la app de inglés.
 
