@@ -1,5 +1,12 @@
 # Historial de cambios
 
+## v3.7.0 — Reto recomendado en Ensayos
+- **🎯 Reto recomendado** por nivel: la app elige un tema (primero los que no has escrito, luego los de nota más baja), te pide **tiempos verbales** (más en niveles altos y los que has fallado en ensayos y exámenes) y **palabras obligatorias** del tema (3 en A1 hasta 7 en C1; en B2 y C1 incluye un conector avanzado).
+- Las palabras se marcan en verde al usarlas (acepta worked, working, went…). Nueva parte de la nota: **Palabras del reto**. Botón **🔄 Otro reto**.
+
+## v3.6.1 — Nombre en la barra
+- Inicio: "ETO Toolkit · by Eng. Andres Rios".
+
 ## v3.6.0 — Ensayos con calificación (Inglés)
 - **✍️ Escritura → Ensayos**: 24 temas en 5 niveles (A1–C1) con extensión por nivel, ideas y estructuras que hay que usar.
 - Calificación automática de 0 a 100 sin internet: extensión, gramática (más de 40 errores típicos: he work, I have 30 years, didn't went, people is, more better, depend of, enjoy to…), ortografía y puntuación, variedad de vocabulario, conectores, párrafos y estructuras del tema.

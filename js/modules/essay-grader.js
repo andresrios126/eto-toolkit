@@ -300,6 +300,28 @@ function connectorsFor(level) {
 }
 const ADVANCED = new Set([...CONNECTORS.B2, ...CONNECTORS.C1]);
 
+// ---------- Palabras pedidas ----------
+
+const esc = (x) => x.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+function forms(w) {
+  const out = new Set([w, `${w}s`, `${w}es`, `${w}ed`, `${w}d`, `${w}ing`, `${w}er`, `${w}ly`]);
+  if (w.endsWith('e')) out.add(`${w.slice(0, -1)}ing`);
+  if (/[^aeiou]y$/.test(w)) { out.add(`${w.slice(0, -1)}ies`); out.add(`${w.slice(0, -1)}ied`); }
+  if (/[^aeiou][aeiou][bdgmnprt]$/.test(w)) { out.add(`${w}${w.slice(-1)}ed`); out.add(`${w}${w.slice(-1)}ing`); }
+  const irr = IRREGULAR.find((v) => v[0] === w);
+  if (irr) [...split(irr[1]), ...split(irr[2])].forEach((x) => out.add(x));
+  if (PAST_TO_BASE[w]) out.add(PAST_TO_BASE[w]);
+  return [...out];
+}
+// ¿Usó la palabra o expresión (en cualquier forma: worked, working, went…)?
+export function usesWord(text, word) {
+  const parts = word.toLowerCase().split(/\s+/);
+  const last = parts.pop();
+  const head = parts.map(esc).join('\\s+');
+  const re = new RegExp(`\\b${head ? `${head}\\s+` : ''}(?:${forms(last).map(esc).join('|')})\\b`, 'i');
+  return re.test(text.replace(/[’]/g, "'"));
+}
+
 // ---------- Calificación ----------
 
 export function findErrors(text) {
@@ -392,15 +414,22 @@ export function gradeEssay(text, essay) {
   const found = needs.filter((k) => STRUCTURES[k]?.(text));
   const missing = needs.filter((k) => !found.includes(k));
   const struct = needs.length ? 10 * (found.length / needs.length) * clamp(W / (L.min * 0.4)) : 10;
+  // 7) Reto: palabras pedidas (10). Se toman 5 puntos de extensión y 5 de vocabulario.
+  const req = essay.words || [];
+  const wordsUsed = req.filter((w) => usesWord(text, w));
+  const wordsMissing = req.filter((w) => !wordsUsed.includes(w));
+  const isChallenge = req.length > 0;
+  if (isChallenge) { ext *= 10 / 15; vocab *= 10 / 15; }
 
   const parts = [
-    { key: 'extension', name: 'Extensión', got: ext, max: 15 },
+    { key: 'extension', name: 'Extensión', got: ext, max: isChallenge ? 10 : 15 },
     { key: 'gramatica', name: 'Gramática', got: gram, max: 35 },
     { key: 'ortografia', name: 'Ortografía y puntuación', got: mechScore, max: 15 },
-    { key: 'vocabulario', name: 'Vocabulario', got: vocab, max: 15 },
+    { key: 'vocabulario', name: 'Vocabulario', got: vocab, max: isChallenge ? 10 : 15 },
     { key: 'organizacion', name: 'Organización y conectores', got: org, max: 10 },
-    { key: 'estructuras', name: 'Estructuras del tema', got: struct, max: 10 },
-  ].map((p) => ({ ...p, got: Math.round(p.got) }));
+    { key: 'estructuras', name: isChallenge ? 'Tiempos verbales del reto' : 'Estructuras del tema', got: struct, max: 10 },
+    isChallenge ? { key: 'palabras', name: 'Palabras del reto', got: 10 * (wordsUsed.length / req.length) * clamp(W / (L.min * 0.4)), max: 10 } : null,
+  ].filter(Boolean).map((p) => ({ ...p, got: Math.round(p.got) }));
   const score = Math.max(0, Math.min(100, parts.reduce((s, p) => s + p.got, 0)));
 
   // ---------- Qué estudiar ----------
@@ -416,6 +445,10 @@ export function gradeEssay(text, essay) {
   for (const k of missing) {
     study.push({ topic: k, count: 1, title: tenseName(k) || k, why: 'El tema pedía usar esta estructura y no la encontré.',
       tip: 'Repasa el tema y escribe al menos dos oraciones con esta estructura.' });
+  }
+  if (wordsMissing.length) {
+    study.push({ topic: 'palabras', title: 'Palabras del reto', why: `No usaste: ${wordsMissing.join(', ')}.`,
+      tip: 'Busca su significado (mantén presionada la palabra) y escribe una oración con cada una.' });
   }
   if (W < L.min) study.push({ topic: 'extension', title: 'Extensión', why: `Escribiste ${W} palabras; el mínimo es ${L.min}.`, tip: TOPICS.extension.tip });
   if (usedConns.length < L.connectors || (['B2', 'C1'].includes(essay.level) && !hasAdvanced)) {
@@ -436,11 +469,12 @@ export function gradeEssay(text, essay) {
   const good = [];
   if (W >= L.min && W <= L.max * 1.25) good.push(`Cumpliste la extensión (${W} palabras).`);
   if (found.length) good.push(`Usaste ${found.map((k) => tenseName(k) || k).join(', ')}.`);
+  if (isChallenge && wordsUsed.length) good.push(`Palabras del reto: ${wordsUsed.join(', ')} (${wordsUsed.length}/${req.length}).`);
   if (usedConns.length) good.push(`Conectores: ${usedConns.join(', ')}.`);
   if (W >= L.min * 0.5 && per100(g) < 2) good.push('Muy pocos errores de gramática.');
   if (W >= L.min * 0.5 && mech === 0) good.push('Sin errores de ortografía ni puntuación detectados.');
   if (div >= 0.7 && W >= 30) good.push('Buen vocabulario variado.');
 
   const grade = score >= 90 ? 'Excelente' : score >= 75 ? 'Muy bien' : score >= 60 ? 'Aprobado' : score >= 40 ? 'Casi' : 'Sigue practicando';
-  return { score, grade, parts, errors, study, good, words: W, found, missing, connectors: usedConns };
+  return { score, grade, parts, errors, study, good, words: W, found, missing, connectors: usedConns, wordsUsed, wordsMissing };
 }

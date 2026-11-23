@@ -768,3 +768,7 @@ select.input { appearance: auto; }
 .study-item p { margin: 4px 0 0; }
 a.chip { text-decoration: none; color: var(--text); }
 a.chip.active { color: var(--on-accent); }
+.challenge-card { border-color: rgba(245, 180, 0, .55); box-shadow: 0 0 0 1px rgba(245, 180, 0, .25) inset; }
+.challenge-card .term-chips { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin: 6px 0; }
+.word-chip.tag-ok { background: rgba(62, 207, 142, .18); }
+.word-chip.tag-ok::before { content: '✓ '; }
