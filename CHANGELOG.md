@@ -1,5 +1,9 @@
 # Historial de cambios
 
+## v3.12.0 — Tiempo total de uso
+- La app cuenta el tiempo de uso real (solo con la app en pantalla; se pausa tras 5 min sin tocar nada) y lo muestra en horas y minutos (p. ej. "12 h 35 min") en el inicio y en ⚙️ → Cuenta.
+- Con cuenta, el tiempo se guarda en el documento del usuario en Firebase (`users/{uid}`, ajuste `usage`, segundos por dispositivo) y se suman todos sus dispositivos. Sin cuenta queda solo en el dispositivo.
+
 ## v3.11.0 — Usuario y ranking en la barra
 - Junto al botón ⚙️ aparece tu usuario y tu puesto en el ranking del juego ETO (👤 usuario · 🏆 #3). Al tocarlo abre el Ranking. Solo se muestra con cuenta iniciada y se oculta durante lecciones y exámenes.
 

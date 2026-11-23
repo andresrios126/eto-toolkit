@@ -5,6 +5,7 @@ import { rateControl } from './components.js';
 import { initLookup } from './lookup.js';
 import { initCloud, cloudConfigured, getSession, getStatus, signIn, signUp, signOut, syncNow, cachedRank, refreshMyRank } from './cloud.js';
 import { pingUsage, fetchUsage, statsEnabled, setStatsEnabled } from './stats.js';
+import { initUsage, getUsageSeconds, formatHM } from './usage.js';
 import { APP_ICONS, iconPath, currentIcon, applyIcon, installUrl } from './icons.js';
 import { THEMES, CUSTOM_SWATCHES, applyTheme, currentTheme, saveTheme, themeVars, DEFAULT_THEME } from './themes.js';
 import { initSpeech, stop as stopSpeech } from './speech.js';
@@ -23,7 +24,7 @@ import { TERMS } from './data/glossary.js';
 import { FAULTS } from './data/faults.js';
 import { DIAGRAMS } from './data/diagrams.js';
 
-const APP_VERSION = '3.11.0';
+const APP_VERSION = '3.12.0';
 
 const MODULES = [
   { key: 'juego', icon: '🎮', title: 'Juego', desc: 'Opción múltiple y escritura', cls: 'tile-game' },
@@ -65,6 +66,7 @@ async function viewHome() {
     ),
     h('a', { class: 'muted center small home-account', href: '#/ajustes' },
       getSession() ? `☁️ Sincronizado como ${getSession().username}` : cloudConfigured() ? '👤 Sin cuenta: el avance se guarda solo en este dispositivo (inicia sesión en ⚙️)' : 'Los datos se guardan en este dispositivo.'),
+    usageLine(getSession() ? 'en todos tus dispositivos' : 'en este dispositivo'),
     h('p', { class: 'muted center small' }, `v${APP_VERSION}`),
   );
 }
@@ -110,6 +112,13 @@ function iconSection() {
   );
 }
 
+// Tiempo total de uso (se rellena al leerlo de la base de datos).
+function usageLine(where) {
+  const p = h('p', { class: 'usage-line' }, '⏱ Tiempo en la app: …');
+  getUsageSeconds().then((s) => { p.replaceChildren('⏱ Tiempo en la app: ', h('b', {}, formatHM(s)), h('span', { class: 'muted small' }, ` · ${where}`)); });
+  return p;
+}
+
 // ---------- Cuenta (usuario + contraseña, sincronización) ----------
 function accountSection() {
   const wrap = h('div', { class: 'stack' });
@@ -131,6 +140,7 @@ function accountSection() {
       wrap.replaceChildren(h('h2', { class: 'label' }, '👤 Cuenta'), h('section', { class: 'card account' },
         h('div', { class: 'row-between' }, h('strong', { class: 'acc-user' }, `👤 ${ses.username}`), h('span', { class: 'tag tag-ok' }, 'sesión iniciada')),
         h('p', { class: 'small' }, state),
+        usageLine('en todos tus dispositivos'),
         h('p', { class: 'muted small' }, 'Tu avance se guarda y se sincroniza solo cada vez que haces algo. Sin internet se guarda aquí y se sube al volver la conexión. Las imágenes privadas no se sincronizan.'),
         h('div', { class: 'btn-row' }, syncBtn,
           h('button', { class: 'btn btn-danger', onclick: () => {
@@ -171,6 +181,7 @@ function accountSection() {
       }
     };
     wrap.replaceChildren(h('h2', { class: 'label' }, '👤 Cuenta'), h('section', { class: 'card account' },
+      usageLine('en este dispositivo'),
       h('p', { class: 'small' }, 'Inicia sesión una vez en cada dispositivo y tu avance será el mismo en todos. Sin cuenta también puedes usar todo; solo no se sincroniza.'),
       tabs, user, pass, pass2, msg, go,
       h('p', { class: 'muted small' }, '🔒 Sin correo: solo usuario y contraseña. Guarda bien tu contraseña: no se puede recuperar por correo.'),
@@ -431,6 +442,7 @@ async function start() {
   requestPersistence();
   initLookup();
   initCloud();
+  initUsage();
   paintMe();
   ['eto-rank', 'eto-cloud-status'].forEach((ev) => window.addEventListener(ev, paintMe));
   pingUsage(APP_VERSION);

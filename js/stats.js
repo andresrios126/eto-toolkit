@@ -24,6 +24,8 @@ const docsBase = () => `${cfg().firestoreBase}/projects/${cfg().projectId}/datab
 function store(key, v) { try { if (v == null) localStorage.removeItem(key); else localStorage.setItem(key, v); } catch (_) { /* sin almacenamiento */ } }
 function read(key) { try { return localStorage.getItem(key); } catch (_) { return null; } }
 
+export const deviceId = () => device().id;
+
 function device() {
   let d = null;
   try { d = JSON.parse(read(DEVICE_KEY)); } catch (_) { /* nada */ }

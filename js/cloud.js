@@ -10,6 +10,7 @@
 
 import { CLOUD_CONFIG } from './cloud-config.js';
 import { db, STORES, onDataChange, withoutChangeEvents, getSetting } from './db.js';
+import { mergeUsage } from './usage.js';
 
 const SYNC_STORES = ['answers', 'settings', 'log', 'glossary', 'faults'];
 const LOCAL_ONLY_SETTINGS = new Set(['theme', 'icon', 'sound', 'speechRate', 'interviewFilter', 'glossaryFilter', 'faultFilter', 'cardsDeck', 'cardsDir', 'cardsSize', 'mockCfg']);
@@ -226,6 +227,7 @@ function mergeSettings(local = [], remote = []) {
     if (!(k in L) || !(k in R)) continue;
     if (k === 'game') out[k] = mergeGame(L[k], R[k]);
     else if (k === 'english') out[k] = mergeEnglish(L[k], R[k]);
+    else if (k === 'usage') out[k] = mergeUsage(L[k], R[k]);
     else if (k === 'kposCourse') out[k] = { units: { ...(R[k].units || {}), ...(L[k].units || {}) }, best: Math.max(R[k].best || 0, L[k].best || 0) };
     else if (k === 'mockHistory') {
       const m = new Map([...(R[k] || []), ...(L[k] || [])].map((h) => [h.date, h]));
