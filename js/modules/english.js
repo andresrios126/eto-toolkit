@@ -57,15 +57,16 @@ function fromExercise(t, ex, mode) {
   const say = answers[0].includes('/')
     ? sentence.replace('___', answers[0].split('/')[0].trim()).replace('___', answers[0].split('/')[1].trim())
     : sentence.replace('___', answers[0]);
+  const learn = { en: say, es, def: tenseInfo(t) };
   if (mode === 'type') {
-    return typeQuestion({
+    return withLearn(typeQuestion({
       prompt: 'Escribe el verbo en la forma correcta', text: `${sentence}  (${verb})`, sub: `🇪🇸 ${es}`,
       answers, say, kind: `✍️ ${t.name}`,
-    });
+    }), learn);
   }
-  return mc('Elige la forma correcta', answers[0], wrong, {
+  return withLearn(mc('Elige la forma correcta', answers[0], wrong, {
     text: `${sentence}  (${verb})`, textLang: 'en', sub: `🇪🇸 ${es}`, say, sayAfter: true, kind: `🔤 ${t.name}`, optLang: 'en',
-  });
+  }), learn);
 }
 
 function whichTense(t) {
@@ -73,15 +74,16 @@ function whichTense(t) {
   const same = TENSES.filter((x) => x.group === t.group && x.id !== t.id).map((x) => x.name);
   const other = TENSES.filter((x) => x.id !== t.id).map((x) => x.name);
   const wrong = [...new Set([...shuffle(same), ...shuffle(other)])].slice(0, 3);
-  return mc('¿Qué tiempo verbal es?', t.name, wrong, {
+  return withLearn(mc('¿Qué tiempo verbal es?', t.name, wrong, {
     text: en, textLang: 'en', sub: `🇪🇸 ${es}`, say: en, kind: '🕵️ Identify the tense', optLang: 'en',
-  });
+  }), { en, es, def: tenseInfo(t) });
 }
 
 function translate(t) {
   const [en, es] = pick(t.examples);
   const pool = TENSES.flatMap((x) => x.examples.map((e) => e[1])).filter((x) => x !== es);
-  return mc('¿Qué significa?', es, shuffle(pool).slice(0, 3), { text: en, textLang: 'en', say: en, kind: '🇬🇧 → 🇪🇸', small: true });
+  return withLearn(mc('¿Qué significa?', es, shuffle(pool).slice(0, 3), { text: en, textLang: 'en', say: en, kind: '🇬🇧 → 🇪🇸', small: true }),
+    { en, es, def: tenseInfo(t) });
 }
 
 function tenseQuestions(t, n = 10) {
@@ -96,9 +98,18 @@ function tenseQuestions(t, n = 10) {
 
 const pastAlts = (v) => v.split('/').map((x) => x.trim());
 
+// Ficha de aprendizaje que aparece después de responder (igual que en el juego ETO).
+const tenseInfo = (t) => `📘 ${t.name} · ${t.es}`;
+const withLearn = (q, learn) => { q.learn = learn; return q; };
+function verbLearn([base, past, pp, es]) {
+  const f = ES_FORMS[base];
+  return { en: `${base} – ${past} – ${pp}`, es, def: f ? `🇪🇸 ${f[0]} · ${f[1]} · ${f[2]}` : null };
+}
+
 function irregularQuestions(n = 10) {
   const out = [];
   for (const v of shuffle(IRREGULAR).slice(0, n)) {
+    const start = out.length;
     const [base, past, pp, es] = v;
     const kind = pick(['past', 'pp', 'mcPast', 'es', 'chain', 'esForm']);
     if (kind === 'past') {
@@ -126,6 +137,7 @@ function irregularQuestions(n = 10) {
       const wrong = shuffle(IRREGULAR.filter((x) => x[0] !== base)).slice(0, 3).map((x) => x[0]);
       out.push(mc('¿Cómo se dice en inglés?', base, wrong, { big: es, say: base, sayAfter: true, kind: '🇪🇸 → 🇬🇧', optLang: 'en', small: true }));
     }
+    if (out[start]) out[start].learn = verbLearn(v);
   }
   return out;
 }
@@ -141,10 +153,12 @@ function regularQuestions(n = 10) {
   for (const [base, past, es] of shuffle(REGULAR).slice(0, n)) {
     const kind = pick(['type', 'type', 'sound', 'regirr']);
     if (kind === 'type') {
-      out.push(typeQuestion({ prompt: 'Escribe el pasado (regular)', text: `${base}  (${es})`, answers: [past], say: `${base}, ${past}`, kind: '✅ Regular verbs' }));
+      out.push(withLearn(typeQuestion({ prompt: 'Escribe el pasado (regular)', text: `${base}  (${es})`, answers: [past], say: `${base}, ${past}`, kind: '✅ Regular verbs' }),
+        { en: `${base} – ${past}`, es, def: `🔊 La -ed suena ${edSound(base)}` }));
     } else if (kind === 'sound') {
       const correct = edSound(base);
-      out.push(mc(`¿Cómo suena la -ed de «${past}»?`, correct, ['/t/', '/d/', '/ɪd/'].filter((x) => x !== correct), { say: past, kind: '🔊 Pronunciation', optLang: 'en' }));
+      out.push(withLearn(mc(`¿Cómo suena la -ed de «${past}»?`, correct, ['/t/', '/d/', '/ɪd/'].filter((x) => x !== correct), { sub: `🇪🇸 ${es}`, say: past, kind: '🔊 Pronunciation', optLang: 'en' }),
+        { en: `${base} – ${past}`, es, def: `🔊 La -ed de «${past}» suena ${correct}` }));
     } else {
       const irr = Math.random() < 0.5;
       const verb = irr ? pick(IRREGULAR)[0] : base;
