@@ -1,0 +1,660 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Error Screen">
+<meta name="theme-color" content="#000000">
+<title>Error Screen</title>
+<style>html,body{overscroll-behavior:none}</style>
+</head>
+<body>
+<style>
+  /* Layout: on desktop, an iPhone "floats" centered on a dark stage with a drawn status bar
+     (clock, lock island, signal/wifi/battery); on a phone it fills the screen edge to edge.
+     Inside: the lock screen — swipe prompt, 6 dots, frosted-glass keypad, Emergency / Cancel.
+     Secret settings open with a long-press on the prompt text. */
+  :root {
+    --fg: #ffffff;
+    --dim: rgba(255, 255, 255, 0.62);
+    --dot-border: rgba(255, 255, 255, 0.85);
+    --danger: #ff6b6b;
+    --good: #30d158;
+    --field: rgba(255,255,255,0.08);
+    color-scheme: dark;
+  }
+
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { height: 100%; }
+
+  body {
+    margin: 0;
+    background: radial-gradient(120% 90% at 50% 25%, #26262c 0%, #101013 55%, #060608 100%);
+    color: var(--fg);
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, sans-serif;
+    -webkit-user-select: none; user-select: none;
+  }
+
+  .stage {
+    min-height: 100%;
+    display: flex; align-items: center; justify-content: center;
+    padding: 24px;
+  }
+
+  /* iPhone frame */
+  .device {
+    height: min(844px, calc(100dvh - 48px));
+    aspect-ratio: 390 / 844;
+    max-width: 92vw;
+    border-radius: 56px;
+    padding: 5px;
+    background: linear-gradient(145deg, #4a4a4e, #1a1a1c 55%, #313134);
+    box-shadow: 0 34px 90px rgba(0,0,0,0.65), 0 6px 18px rgba(0,0,0,0.5),
+                inset 0 0 1px 1px rgba(255,255,255,0.18);
+  }
+  .screen {
+    position: relative; width: 100%; height: 100%;
+    border-radius: 51px; overflow: hidden; background: #000;
+  }
+
+  .wallpaper, .scrim { position: absolute; inset: 0; z-index: 0; pointer-events: none; }
+  .wallpaper { background-size: cover; background-position: center; background-repeat: no-repeat; }
+  .scrim {
+    background:
+      radial-gradient(70% 45% at 50% 18%, rgba(60,60,70,0.22), transparent 70%),
+      linear-gradient(180deg, rgba(0,0,0,0.30), rgba(0,0,0,0) 22%, rgba(0,0,0,0) 66%, rgba(0,0,0,0.32));
+  }
+
+  /* Drawn status bar (desktop only) */
+  .statusbar {
+    position: absolute; top: 0; left: 0; right: 0; height: 52px; z-index: 3;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 26px; font-size: 15px; font-weight: 600; letter-spacing: 0.2px;
+  }
+  .sb-left { display: flex; align-items: center; gap: 5px; }
+  .sb-right { display: flex; align-items: center; gap: 7px; }
+  .island {
+    position: absolute; left: 50%; transform: translateX(-50%); top: 9px;
+    height: 32px; min-width: 118px; background: #000; border-radius: 18px;
+    display: flex; align-items: center; justify-content: center; gap: 13px; padding: 0 18px;
+  }
+  .island .lk { font-size: 14px; }
+  .battery {
+    width: 25px; height: 12px; border: 1px solid rgba(255,255,255,0.45); border-radius: 3.5px;
+    position: relative; display: inline-flex; padding: 1.5px;
+  }
+  .battery::after {
+    content: ""; position: absolute; right: -3px; top: 3.5px; width: 2px; height: 5px;
+    border-radius: 0 1.5px 1.5px 0; background: rgba(255,255,255,0.45);
+  }
+  .battery > i { display: block; height: 100%; width: 100%; background: #fff; border-radius: 1.5px; }
+
+  .content {
+    position: absolute; inset: 0; z-index: 2;
+    display: flex; flex-direction: column; align-items: center;
+    padding: 54px 22px 22px;
+  }
+
+  .prompt {
+    font-size: 19px; font-weight: 400; text-align: center; line-height: 1.3;
+    max-width: 290px; opacity: 0.96; cursor: default; margin-top: 9%;
+    text-shadow: 0 1px 4px rgba(0,0,0,0.5);
+  }
+  .clue {
+    font-size: 15px; color: var(--dim); max-width: 290px; text-align: center;
+    line-height: 1.4; margin-top: 10px; white-space: pre-wrap; text-shadow: 0 1px 3px rgba(0,0,0,0.5);
+  }
+  .clue:empty { display: none; }
+
+  .dots { display: flex; gap: 24px; margin-top: 26px; }
+  .dot {
+    width: 16px; height: 16px; border-radius: 50%;
+    border: 1.5px solid var(--dot-border); transition: background 0.12s, transform 0.12s;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.4);
+  }
+  .dot.filled { background: var(--fg); transform: scale(1.05); }
+  .dots.shake { animation: shake 0.45s cubic-bezier(.36,.07,.19,.97); }
+  @keyframes shake {
+    10%,90%{transform:translateX(-2px)} 20%,80%{transform:translateX(4px)}
+    30%,50%,70%{transform:translateX(-9px)} 40%,60%{transform:translateX(9px)}
+  }
+
+  .status {
+    min-height: 20px; margin-top: 14px; font-size: 15px; color: var(--danger);
+    text-align: center; max-width: 280px; text-shadow: 0 1px 3px rgba(0,0,0,0.5);
+  }
+
+  .pad {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px 22px;
+    width: 100%; max-width: 300px; margin-top: 26px;
+  }
+  .key {
+    width: 80px; height: 80px; justify-self: center; border-radius: 50%;
+    position: relative; overflow: hidden; color: var(--fg); font-family: inherit;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
+    cursor: pointer;
+    background: linear-gradient(150deg, rgba(255,255,255,0.22), rgba(255,255,255,0.045) 55%, rgba(255,255,255,0.10));
+    -webkit-backdrop-filter: blur(16px) brightness(1.1) saturate(1.1);
+    backdrop-filter: blur(16px) brightness(1.1) saturate(1.1);
+    border: 1px solid rgba(255,255,255,0.20);
+    box-shadow: inset 0 1.5px 1px rgba(255,255,255,0.40), inset 0 -10px 18px rgba(0,0,0,0.28), 0 5px 16px rgba(0,0,0,0.38);
+    transition: background 0.12s, transform 0.08s;
+  }
+  .key::before {
+    content: ""; position: absolute; top: 7%; left: 14%; width: 58%; height: 44%;
+    background: radial-gradient(circle at 32% 30%, rgba(255,255,255,0.45), rgba(255,255,255,0) 70%);
+    border-radius: 50%; pointer-events: none;
+  }
+  .key > * { position: relative; z-index: 1; }
+  .key:active, .key.press {
+    background: linear-gradient(150deg, rgba(255,255,255,0.45), rgba(255,255,255,0.18));
+    transform: scale(0.97);
+  }
+  .key .num { font-size: 33px; font-weight: 400; line-height: 1; text-shadow: 0 1px 3px rgba(0,0,0,0.45); }
+  .key .ltr { font-size: 10px; letter-spacing: 2px; font-weight: 600; opacity: 0.9; height: 11px; text-shadow: 0 1px 2px rgba(0,0,0,0.45); }
+  .key.ghost {
+    background: transparent; border: none; box-shadow: none;
+    -webkit-backdrop-filter: none; backdrop-filter: none; pointer-events: none;
+  }
+  .key.ghost::before { display: none; }
+
+  .bottomrow {
+    display: flex; justify-content: space-between; align-items: center;
+    width: 100%; max-width: 330px; margin-top: auto; padding-top: 20px; font-size: 17px;
+  }
+  .txtbtn {
+    background: none; border: none; color: var(--fg); font-size: 17px;
+    font-family: inherit; cursor: pointer; padding: 8px 4px; text-shadow: 0 1px 3px rgba(0,0,0,0.5);
+  }
+
+  /* ---------- Overlays (clipped inside the screen) ---------- */
+  .overlay {
+    position: absolute; inset: 0; z-index: 10;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    text-align: center; gap: 16px; padding: 30px 24px;
+  }
+  .lockout { background: rgba(0,0,0,0.93); backdrop-filter: blur(6px); }
+  .lockout .ico { font-size: 44px; }
+  .lockout h1 { font-size: 26px; font-weight: 600; margin: 0; }
+  .lockout p { font-size: 16px; opacity: 0.75; margin: 0; max-width: 280px; line-height: 1.4; }
+  .lockout .count { font-size: 15px; opacity: 0.55; font-variant-numeric: tabular-nums; }
+
+  .reveal { background: radial-gradient(120% 90% at 50% 0%, #0d2a16 0%, #050806 60%, #000 100%); justify-content: flex-start; }
+  .reveal .scroll {
+    width: 100%; max-width: 320px; margin-top: auto; margin-bottom: auto;
+    display: flex; flex-direction: column; align-items: center; gap: 13px; overflow-y: auto; max-height: 100%;
+  }
+  .reveal .check {
+    width: 60px; height: 60px; border-radius: 50%; background: var(--good);
+    display: flex; align-items: center; justify-content: center; font-size: 32px; color: #04210d;
+  }
+  .reveal h1 { font-size: 23px; font-weight: 700; margin: 0; }
+  .reveal .msg { font-size: 15px; opacity: 0.85; margin: 0; line-height: 1.45; max-width: 290px; white-space: pre-wrap; }
+  .listwrap { width: 100%; text-align: left; margin-top: 4px; }
+  .listwrap .lbl { font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--dim); margin-bottom: 8px; text-align: center; }
+  .attempt { display: flex; align-items: center; gap: 12px; padding: 10px 14px; background: var(--field); border-radius: 12px; margin-bottom: 7px; }
+  .attempt .i { font-size: 13px; color: var(--dim); width: 22px; font-variant-numeric: tabular-nums; }
+  .attempt .code { font-size: 21px; font-weight: 600; letter-spacing: 6px; font-variant-numeric: tabular-nums; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+  .empty { font-size: 15px; color: var(--dim); text-align: center; padding: 10px 0; }
+  .btnrow { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; margin-top: 8px; }
+  .btn { background: var(--field); border: none; color: var(--fg); font-family: inherit; font-size: 15px; padding: 12px 18px; border-radius: 999px; cursor: pointer; }
+  .btn.primary { background: var(--good); color: #04210d; font-weight: 600; }
+
+  .settings { background: rgba(0,0,0,0.97); justify-content: flex-start; align-items: stretch; }
+  .settings .inner {
+    width: 100%; max-width: 340px; margin: auto; text-align: left;
+    display: flex; flex-direction: column; gap: 14px; overflow-y: auto; max-height: 100%;
+  }
+  .settings h2 { font-size: 21px; margin: 0; font-weight: 700; text-align: center; }
+  .settings .sub { font-size: 12.5px; color: var(--dim); text-align: center; margin: -6px 0 2px; }
+  .fld { display: flex; flex-direction: column; gap: 6px; }
+  .fld label { font-size: 12.5px; color: var(--dim); font-weight: 600; }
+  .fld input[type=text], .fld input:not([type]), .fld textarea {
+    background: var(--field); border: 1px solid rgba(255,255,255,0.12); border-radius: 12px;
+    color: var(--fg); font-family: inherit; font-size: 16px; padding: 11px 13px; width: 100%;
+  }
+  .fld input:focus, .fld textarea:focus { outline: none; border-color: var(--good); }
+  .fld textarea { resize: vertical; min-height: 52px; }
+  .fld .codein { letter-spacing: 8px; font-size: 21px; text-align: center; font-weight: 600; }
+  .bgrow { display: flex; gap: 10px; align-items: center; }
+  .filebtn { flex: 1; background: var(--field); border: 1px solid rgba(255,255,255,0.12); border-radius: 12px; color: var(--fg); font-size: 15px; padding: 11px 13px; cursor: pointer; text-align: center; }
+  .langrow { display: flex; gap: 8px; }
+  .langbtn { flex: 1; background: var(--field); border: 1px solid rgba(255,255,255,0.12); border-radius: 12px; color: var(--fg); font-family: inherit; font-size: 15px; padding: 10px; cursor: pointer; }
+  .langbtn.active { background: var(--good); color: #04210d; font-weight: 600; border-color: transparent; }
+  .save-note { font-size: 12.5px; color: var(--good); text-align: center; min-height: 15px; }
+
+  /* Phone: fill the screen, hide the fake frame + status bar (iOS shows its own) */
+  @media (max-width: 500px) {
+    .stage { padding: 0; }
+    .device {
+      height: 100%; width: 100%; max-width: none; aspect-ratio: auto;
+      border-radius: 0; padding: 0; box-shadow: none; background: #000;
+    }
+    .screen { border-radius: 0; }
+    .statusbar { display: none; }
+    .content {
+      padding: calc(env(safe-area-inset-top,0px) + 10px) max(20px, env(safe-area-inset-left,0px))
+               calc(env(safe-area-inset-bottom,0px) + 18px) max(20px, env(safe-area-inset-right,0px));
+    }
+    .prompt { margin-top: 12vh; }
+    .key { width: 82px; height: 82px; }
+  }
+  @media (max-height: 560px) {
+    .key { width: 64px; height: 64px; }
+    .key .num { font-size: 27px; }
+    .prompt { margin-top: 4%; }
+    .pad { margin-top: 16px; }
+  }
+</style>
+
+<div class="stage">
+  <div class="device">
+    <div class="screen">
+      <div class="wallpaper" id="wallpaper"></div>
+      <div class="scrim"></div>
+
+      <div class="statusbar" id="statusbar">
+        <div class="sb-left">
+          <span id="sbtime">1:04</span>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="#fff" aria-hidden="true"><path d="M21 3L3 10.5l7.5 2.6L13 21z"/></svg>
+        </div>
+        <div class="island">
+          <span class="lk">🔒</span>
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#30d158" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M4 8V6.5A2.5 2.5 0 0 1 6.5 4H8"/><path d="M16 4h1.5A2.5 2.5 0 0 1 20 6.5V8"/>
+            <path d="M20 16v1.5a2.5 2.5 0 0 1-2.5 2.5H16"/><path d="M8 20H6.5A2.5 2.5 0 0 1 4 17.5V16"/>
+            <path d="M9 10.5v1M15 10.5v1"/><path d="M12 10v3.2M10.5 15.5a3 3 0 0 0 3 0"/>
+          </svg>
+        </div>
+        <div class="sb-right">
+          <svg width="18" height="12" viewBox="0 0 18 12" fill="#fff" aria-hidden="true">
+            <rect x="0" y="8" width="3" height="4" rx="1"/><rect x="5" y="5.5" width="3" height="6.5" rx="1"/>
+            <rect x="10" y="3" width="3" height="9" rx="1"/><rect x="15" y="0.5" width="3" height="11.5" rx="1"/>
+          </svg>
+          <svg width="17" height="12" viewBox="0 0 18 13" fill="#fff" aria-hidden="true">
+            <path d="M9 13l2.4-3a3.7 3.7 0 0 0-4.8 0z"/>
+            <path d="M9 7.1c1.7 0 3.3.6 4.5 1.7l1.6-2A9.3 9.3 0 0 0 9 4.4 9.3 9.3 0 0 0 2.9 6.8l1.6 2A6.7 6.7 0 0 1 9 7.1z" opacity=".9"/>
+            <path d="M9 2.2c2.6 0 5 .9 6.9 2.5l1.5-1.8A13.6 13.6 0 0 0 9 0 13.6 13.6 0 0 0 .6 2.9l1.5 1.8A11.4 11.4 0 0 1 9 2.2z" opacity=".9"/>
+          </svg>
+          <span class="battery"><i></i></span>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="prompt" id="prompt">Desliza hacia arriba para Face ID o usa el código</div>
+        <div class="clue" id="clue"></div>
+
+        <div class="dots" id="dots">
+          <div class="dot"></div><div class="dot"></div><div class="dot"></div>
+          <div class="dot"></div><div class="dot"></div><div class="dot"></div>
+        </div>
+        <div class="status" id="status"></div>
+
+        <div class="pad" id="pad">
+          <button class="key" data-n="1"><span class="num">1</span><span class="ltr"></span></button>
+          <button class="key" data-n="2"><span class="num">2</span><span class="ltr">A B C</span></button>
+          <button class="key" data-n="3"><span class="num">3</span><span class="ltr">D E F</span></button>
+          <button class="key" data-n="4"><span class="num">4</span><span class="ltr">G H I</span></button>
+          <button class="key" data-n="5"><span class="num">5</span><span class="ltr">J K L</span></button>
+          <button class="key" data-n="6"><span class="num">6</span><span class="ltr">M N O</span></button>
+          <button class="key" data-n="7"><span class="num">7</span><span class="ltr">P Q R S</span></button>
+          <button class="key" data-n="8"><span class="num">8</span><span class="ltr">T U V</span></button>
+          <button class="key" data-n="9"><span class="num">9</span><span class="ltr">W X Y Z</span></button>
+          <div class="key ghost"></div>
+          <button class="key" data-n="0"><span class="num">0</span><span class="ltr"></span></button>
+          <div class="key ghost"></div>
+        </div>
+
+        <div class="bottomrow">
+          <button class="txtbtn" id="emergency">Emergencia</button>
+          <button class="txtbtn" id="cancel">Cancelar</button>
+        </div>
+      </div>
+
+      <!-- Lockout -->
+      <div class="overlay lockout" id="lockout" hidden>
+        <div class="ico">⏱️</div>
+        <h1 id="lockTitle">iPhone no disponible</h1>
+        <p id="lockMsg"></p>
+        <div class="count" id="lockCount"></div>
+      </div>
+
+      <!-- Reveal -->
+      <div class="overlay reveal" id="reveal" hidden>
+        <div class="scroll">
+          <div class="check">✓</div>
+          <h1 id="revealTitle"></h1>
+          <p class="msg" id="revealMsg"></p>
+          <div class="listwrap">
+            <div class="lbl" id="listLbl"></div>
+            <div id="attemptList"></div>
+          </div>
+          <div class="btnrow">
+            <button class="btn primary" id="playAgain">Jugar otra vez</button>
+            <button class="btn" id="openSettings2">Ajustes</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Settings -->
+      <div class="overlay settings" id="settings" hidden>
+        <div class="inner">
+          <h2>Ajustes</h2>
+          <div class="sub">Solo tú ves esto. Ciérralo antes de prestar la pantalla.</div>
+
+          <div class="fld">
+            <label>Idioma de la pantalla</label>
+            <div class="langrow">
+              <button class="langbtn" id="langEs" data-lang="es">Español</button>
+              <button class="langbtn" id="langEn" data-lang="en">English</button>
+            </div>
+          </div>
+
+          <div class="fld">
+            <label>Código correcto (6 dígitos) — la respuesta</label>
+            <input id="setCode" class="codein" inputmode="numeric" maxlength="6" pattern="[0-9]*" placeholder="••••••">
+          </div>
+
+          <div class="fld">
+            <label>Fondo de pantalla (imagen)</label>
+            <div class="bgrow">
+              <label class="filebtn" for="setBg">Elegir imagen…</label>
+              <input id="setBg" type="file" accept="image/*" style="display:none">
+              <button class="btn" id="clearBg">Quitar</button>
+            </div>
+          </div>
+
+          <div class="fld">
+            <label>Acertijo / pista (opcional)</label>
+            <textarea id="setClue" placeholder="Ej: ¿Qué número soy...?"></textarea>
+          </div>
+
+          <div class="fld">
+            <label>Título al acertar</label>
+            <input id="setRTitle" type="text" placeholder="(por defecto)">
+          </div>
+
+          <div class="fld">
+            <label>Mensaje al acertar</label>
+            <textarea id="setRMsg" placeholder="(por defecto)"></textarea>
+          </div>
+
+          <div class="fld">
+            <label>Bloquear tras X fallos</label>
+            <input id="setMax" inputmode="numeric" maxlength="2" pattern="[0-9]*" placeholder="0 = nunca">
+          </div>
+
+          <div class="save-note" id="saveNote"></div>
+
+          <div class="btnrow">
+            <button class="btn primary" id="saveSettings">Guardar</button>
+            <button class="btn" id="clearList">Borrar lista</button>
+            <button class="btn" id="closeSettings">Cerrar</button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+  (function () {
+    var LS_CFG = 'errorscreen.cfg.v2';
+    var LS_LOG = 'errorscreen.log.v2';
+
+    var STR = {
+      es: {
+        prompt: 'Desliza hacia arriba para Face ID o usa el código',
+        wrong: 'Código incorrecto. Inténtalo de nuevo.',
+        emergency: 'Emergencia', cancel: 'Cancelar', del: 'Eliminar',
+        emergencyMsg: 'Llamada de emergencia no disponible.',
+        unavailable: 'iPhone no disponible',
+        min: function (m) { return 'Inténtalo de nuevo dentro de ' + m + ' minuto' + (m === 1 ? '' : 's') + '.'; },
+        availableIn: 'Disponible en ',
+        failed: 'Intentos fallidos', nobody: 'Nadie falló... o nadie se atrevió 😏',
+        rtitle: '¡Código correcto! 🔓',
+        rmsg: 'Creíste que la respuesta era otra... pero esta era la correcta 😏\nEstos fueron los intentos:',
+        playAgain: 'Jugar otra vez', settings: 'Ajustes'
+      },
+      en: {
+        prompt: 'Swipe up to open · Enter passcode',
+        wrong: 'Wrong code. Try again.',
+        emergency: 'Emergency', cancel: 'Cancel', del: 'Delete',
+        emergencyMsg: 'Emergency call not available.',
+        unavailable: 'iPhone Unavailable',
+        min: function (m) { return 'Try again in ' + m + ' minute' + (m === 1 ? '' : 's') + '.'; },
+        availableIn: 'Available in ',
+        failed: 'Failed attempts', nobody: 'Nobody failed... or nobody dared 😏',
+        rtitle: 'Correct code! 🔓',
+        rmsg: 'You thought the answer was something else... but this was the right one 😏\nHere are the attempts:',
+        playAgain: 'Play again', settings: 'Settings'
+      }
+    };
+
+    var defaults = { code: '123456', clue: '', rtitle: '', rmsg: '', max: 0, lang: 'es', bg: '' };
+
+    function load(key, fb) { try { var v = localStorage.getItem(key); return v ? JSON.parse(v) : fb; } catch (e) { return fb; } }
+    function save(key, val) { try { localStorage.setItem(key, JSON.stringify(val)); return true; } catch (e) { return false; } }
+
+    var cfg = Object.assign({}, defaults, load(LS_CFG, {}));
+    var attempts = load(LS_LOG, []);
+    if (!Array.isArray(attempts)) attempts = [];
+    function t() { return STR[cfg.lang] || STR.es; }
+
+    var entered = [], failCount = 0, locked = false;
+
+    var dotsEl = document.getElementById('dots');
+    var dotEls = dotsEl.querySelectorAll('.dot');
+    var statusEl = document.getElementById('status');
+    var cancelBtn = document.getElementById('cancel');
+    var emergencyBtn = document.getElementById('emergency');
+    var promptEl = document.getElementById('prompt');
+    var clueEl = document.getElementById('clue');
+    var wallpaperEl = document.getElementById('wallpaper');
+
+    // Live status-bar clock (desktop)
+    function sbClock() {
+      var n = new Date(), h = n.getHours() % 12; if (h === 0) h = 12;
+      var m = n.getMinutes();
+      document.getElementById('sbtime').textContent = h + ':' + (m < 10 ? '0' : '') + m;
+    }
+    sbClock(); setInterval(sbClock, 10000);
+
+    function applyLang() {
+      promptEl.textContent = t().prompt;
+      emergencyBtn.textContent = t().emergency;
+      updateCancel();
+      document.getElementById('playAgain').textContent = t().playAgain;
+      document.getElementById('openSettings2').textContent = t().settings;
+      document.getElementById('lockTitle').textContent = t().unavailable;
+    }
+    function applyClue() { clueEl.textContent = cfg.clue || ''; }
+    function applyBg() { wallpaperEl.style.backgroundImage = cfg.bg ? 'url(' + cfg.bg + ')' : ''; }
+    function updateCancel() { cancelBtn.textContent = entered.length ? t().del : t().cancel; }
+
+    function renderDots() {
+      for (var i = 0; i < dotEls.length; i++) dotEls[i].classList.toggle('filled', i < entered.length);
+      updateCancel();
+    }
+
+    function press(n) {
+      if (locked || entered.length >= 6) return;
+      entered.push(n); statusEl.textContent = ''; renderDots();
+      if (entered.length === 6) setTimeout(check, 150);
+    }
+
+    function check() {
+      var guess = entered.join('');
+      if (guess === cfg.code) { solved(); return; }
+      attempts.push(guess); save(LS_LOG, attempts); failCount++;
+      navigator.vibrate && navigator.vibrate([30, 40, 30]);
+      dotsEl.classList.add('shake');
+      setTimeout(function () { dotsEl.classList.remove('shake'); entered = []; renderDots(); }, 500);
+      var max = parseInt(cfg.max, 10) || 0;
+      if (max > 0 && failCount >= max) { statusEl.textContent = ''; setTimeout(startLockout, 520); }
+      else { statusEl.textContent = t().wrong; }
+    }
+
+    document.getElementById('pad').addEventListener('click', function (e) {
+      var key = e.target.closest('.key');
+      if (!key || key.classList.contains('ghost')) return;
+      key.classList.add('press');
+      setTimeout(function () { key.classList.remove('press'); }, 120);
+      press(key.getAttribute('data-n'));
+    });
+
+    cancelBtn.addEventListener('click', function () { if (locked || entered.length === 0) return; entered.pop(); renderDots(); });
+    emergencyBtn.addEventListener('click', function () { statusEl.textContent = t().emergencyMsg; });
+
+    window.addEventListener('keydown', function (e) {
+      if (document.getElementById('settings').hidden === false) return;
+      if (e.key >= '0' && e.key <= '9') press(e.key);
+      else if (e.key === 'Backspace') { if (entered.length) { entered.pop(); renderDots(); } }
+    });
+
+    var lockSeconds = 60;
+    function startLockout() {
+      locked = true;
+      var lo = document.getElementById('lockout'); lo.hidden = false;
+      var remaining = lockSeconds, mins = Math.round(lockSeconds / 60);
+      document.getElementById('lockTitle').textContent = t().unavailable;
+      document.getElementById('lockMsg').textContent = t().min(mins);
+      var countEl = document.getElementById('lockCount');
+      var timer = setInterval(function () {
+        remaining--;
+        var mm = Math.floor(remaining / 60), ss = remaining % 60;
+        countEl.textContent = t().availableIn + mm + ':' + (ss < 10 ? '0' : '') + ss;
+        if (remaining <= 0) {
+          clearInterval(timer);
+          lockSeconds = Math.min(lockSeconds * 2, 3600);
+          lo.hidden = true; locked = false; failCount = 0; entered = [];
+          renderDots(); statusEl.textContent = '';
+        }
+      }, 1000);
+    }
+
+    function solved() {
+      entered = []; renderDots();
+      navigator.vibrate && navigator.vibrate(120);
+      document.getElementById('revealTitle').textContent = cfg.rtitle || t().rtitle;
+      document.getElementById('revealMsg').textContent = cfg.rmsg || t().rmsg;
+      var list = document.getElementById('attemptList'), lbl = document.getElementById('listLbl');
+      list.innerHTML = '';
+      if (attempts.length === 0) {
+        lbl.textContent = '';
+        var d = document.createElement('div'); d.className = 'empty'; d.textContent = t().nobody; list.appendChild(d);
+      } else {
+        lbl.textContent = t().failed + ' (' + attempts.length + ')';
+        attempts.forEach(function (a, idx) {
+          var row = document.createElement('div'); row.className = 'attempt';
+          var i = document.createElement('span'); i.className = 'i'; i.textContent = (idx + 1);
+          var c = document.createElement('span'); c.className = 'code'; c.textContent = a;
+          row.appendChild(i); row.appendChild(c); list.appendChild(row);
+        });
+      }
+      document.getElementById('reveal').hidden = false;
+    }
+
+    document.getElementById('playAgain').addEventListener('click', function () {
+      attempts = []; save(LS_LOG, attempts);
+      failCount = 0; lockSeconds = 60; entered = [];
+      renderDots(); statusEl.textContent = '';
+      document.getElementById('reveal').hidden = true;
+    });
+
+    var settingsEl = document.getElementById('settings');
+    function markLang() {
+      document.getElementById('langEs').classList.toggle('active', cfg.lang === 'es');
+      document.getElementById('langEn').classList.toggle('active', cfg.lang === 'en');
+    }
+    function openSettings() {
+      document.getElementById('setCode').value = cfg.code || '';
+      document.getElementById('setClue').value = cfg.clue || '';
+      document.getElementById('setRTitle').value = cfg.rtitle || '';
+      document.getElementById('setRMsg').value = cfg.rmsg || '';
+      document.getElementById('setMax').value = cfg.max || 0;
+      document.getElementById('saveNote').textContent = '';
+      markLang();
+      document.getElementById('reveal').hidden = true;
+      settingsEl.hidden = false;
+    }
+    function closeSettings() { settingsEl.hidden = true; }
+
+    document.getElementById('langEs').addEventListener('click', function () { cfg.lang = 'es'; markLang(); applyLang(); });
+    document.getElementById('langEn').addEventListener('click', function () { cfg.lang = 'en'; markLang(); applyLang(); });
+
+    document.getElementById('setBg').addEventListener('change', function (e) {
+      var file = e.target.files && e.target.files[0]; if (!file) return;
+      var note = document.getElementById('saveNote');
+      note.style.color = '#8e8e93'; note.textContent = 'Procesando imagen…';
+      var reader = new FileReader();
+      reader.onload = function (ev) {
+        var img = new Image();
+        img.onload = function () {
+          var max = 1400, scale = Math.min(1, max / Math.max(img.width, img.height));
+          var w = Math.round(img.width * scale), h = Math.round(img.height * scale);
+          var canvas = document.createElement('canvas'); canvas.width = w; canvas.height = h;
+          canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+          try {
+            cfg.bg = canvas.toDataURL('image/jpeg', 0.82); applyBg();
+            note.style.color = '#30d158'; note.textContent = 'Fondo listo ✓ (pulsa Guardar)';
+          } catch (err) { note.style.color = '#ff6b6b'; note.textContent = 'No se pudo cargar esa imagen.'; }
+        };
+        img.onerror = function () { note.style.color = '#ff6b6b'; note.textContent = 'No se pudo leer esa imagen.'; };
+        img.src = ev.target.result;
+      };
+      reader.readAsDataURL(file);
+    });
+
+    document.getElementById('clearBg').addEventListener('click', function () {
+      cfg.bg = ''; applyBg();
+      var note = document.getElementById('saveNote');
+      note.style.color = '#30d158'; note.textContent = 'Fondo quitado (pulsa Guardar)';
+    });
+
+    document.getElementById('saveSettings').addEventListener('click', function () {
+      var code = (document.getElementById('setCode').value || '').replace(/\D/g, '');
+      var note = document.getElementById('saveNote');
+      if (code.length !== 6) { note.style.color = '#ff6b6b'; note.textContent = 'El código debe tener exactamente 6 dígitos.'; return; }
+      cfg.code = code;
+      cfg.clue = document.getElementById('setClue').value;
+      cfg.rtitle = document.getElementById('setRTitle').value;
+      cfg.rmsg = document.getElementById('setRMsg').value;
+      cfg.max = (document.getElementById('setMax').value || '0').replace(/\D/g, '') || '0';
+      if (!save(LS_CFG, cfg)) {
+        note.style.color = '#ff6b6b'; note.textContent = 'La imagen es muy grande para guardarla. Prueba otra más pequeña.'; return;
+      }
+      applyClue(); applyLang();
+      note.style.color = '#30d158'; note.textContent = 'Guardado ✓';
+      setTimeout(closeSettings, 650);
+    });
+
+    document.getElementById('clearList').addEventListener('click', function () {
+      attempts = []; save(LS_LOG, attempts); failCount = 0;
+      var note = document.getElementById('saveNote');
+      note.style.color = '#30d158'; note.textContent = 'Lista borrada ✓';
+    });
+
+    document.getElementById('closeSettings').addEventListener('click', closeSettings);
+    document.getElementById('openSettings2').addEventListener('click', openSettings);
+
+    var holdTimer = null;
+    function holdStart() { holdTimer = setTimeout(openSettings, 750); }
+    function holdEnd() { clearTimeout(holdTimer); }
+    promptEl.addEventListener('pointerdown', holdStart);
+    promptEl.addEventListener('pointerup', holdEnd);
+    promptEl.addEventListener('pointerleave', holdEnd);
+    promptEl.addEventListener('pointercancel', holdEnd);
+    // Backup: double-click the top status bar area also opens settings (handy on desktop)
+    document.getElementById('statusbar').addEventListener('dblclick', openSettings);
+
+    applyLang(); applyClue(); applyBg(); renderDots();
+  })();
+</script>
+
+</body>
+</html>
